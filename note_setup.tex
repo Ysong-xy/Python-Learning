@@ -1,0 +1,81 @@
+\usepackage{xeCJKfntef}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage{colortbl}
+\usepackage[table]{xcolor}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{ctex}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{chngcntr}
+\usepackage{geometry}
+\usepackage[hidelinks=true]{hyperref}
+
+\geometry{
+  left=3.5cm, % 设置页边距
+  right=3.5cm,
+  top=5cm,
+  bottom=5cm,
+  headheight=15pt, % 对页眉页脚有特殊要求时设定
+  headsep=20pt, % 页眉和正文之间的间距
+  footskip=20pt % 页脚和正文之间的间距
+}
+
+\linespread{1.0}
+
+\setmainfont{Times New Roman} %.正文字体
+\setsansfont{Arial} %.斜体字体 
+\setmonofont{Consolas} %.等宽字体
+\setCJKmainfont{KaiTi}
+\setCJKsansfont{SimHei}
+\setCJKmonofont{SimHei}
+
+\lstdefinestyle{lstStyleCode}{
+  tabsize=4,
+  frame=shadowbox, %把代码用带有阴影的框圈起来
+  framerule=0.15pt,
+  numbers=left,
+  numberstyle=\tiny\color{black},
+  rulesepcolor=\color{red!20!green!20!blue!20},
+  aboveskip         = \medskipamount,
+  belowskip         = \medskipamount,
+  basicstyle        = \ttfamily\zihao{6},
+  commentstyle      = \slshape\color{black!60},
+  stringstyle       = \color{green!40!black!100},
+  keywordstyle      = \bfseries\color{blue!50!black},
+  extendedchars     = false,
+  upquote           = true,
+  showstringspaces  = false,
+  xleftmargin       = 1em,
+  xrightmargin      = 1em,
+  breaklines        = false,
+  framexleftmargin  = 1em,
+  framexrightmargin = 1em,
+  backgroundcolor   = \color{gray!6},
+  columns           = flexible,
+  keepspaces        = true,
+  texcl             = true,
+  mathescape        = true
+}
+\lstnewenvironment{codeblock}[1][]{%
+  \lstset{style=lstStyleCode,#1}}{}
+
+%. 设置计数器格式，以章节进行计数。
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\renewcommand{\thetable}{\arabic{table}}
+\renewcommand{\thefigure}{\arabic{figure}}
+\counterwithin{table}{section}
+\counterwithin{figure}{section}
+%. 更改表格名称为Table,图片更名为Figure
+\renewcommand{\tablename}{Table}
+\renewcommand{\figurename}{Figure}
+\addto\captionsenglish{\renewcommand{\contentsname}{目录}} %. 设置目录大标题名称
