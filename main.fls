@@ -253,6 +253,16 @@ OUTPUT main.toc
 INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm
+INPUT /usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm
+INPUT /usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm
+INPUT /usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmr7.tfm
+INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/local/texlive/2023/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT main.aux
 INPUT ./main.out
 INPUT ./main.out
