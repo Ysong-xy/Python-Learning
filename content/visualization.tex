@@ -1,0 +1,132 @@
+\section{visualizations}
+
+  \subsection{matplotlib}
+    \subsubsection{画布预处理}
+      \begin{codeblock}[language=python, caption={basic setup of plt}]
+        from matplotlib import pyplot as plt
+        import numpy as np
+
+        plt.figure(figsize=(10,20),facecolor,edgecolor)
+        plt.title("title")
+        plt.xlabel("x");plt.ylabel("y")
+        plt.style.use("seaborn-v0_8")
+        plt.legend() #显示图例
+        plt.xticks(ticks=[2*i+1 for i in range(10)],labels=[2*i+1 for i in range(10)])
+        plt.xlim(2,22)
+        plt.grid(axis=both, #axis=x or y or False
+                linestyle="dashed", #or dotted or dashdot
+                color="#FFFFFF"
+        ) #添加网格线
+        plt.axhline(5,color,linestyle,linewidth) #水平参考线
+        plt.axvline(10,color,linestyle,linewidth) #垂直参考线
+        plt.axhspan(5,7,color,linestyle,linewidth) #水平参考区域
+        plt.axvspan(10,12,color,linestyle,linewidth) #垂直参考区域
+        plt.annotate(text,xy=(5,10), #待注释点坐标
+                    xytext=(7,12), #注释文本位置
+                    color="#FFFFFF",fontsize=16,
+                    ha="center", #水平居中
+                    va="bottom", #垂直对齐
+                    arrowprops={"arrowstyle":"->", #or "-"
+                                "color":"#FFFFFF"}
+        ) #显示注释点
+        plt.text(7,12,text) #显示无箭头注释
+      \end{codeblock}
+
+    \subsubsection{基本图表}  
+      \begin{codeblock}[language=python, caption={plots of plt}]
+        plt.plot(x,y,color="red",
+                linestyle="dashed", #or dotted or dashdot
+                linewidth=3,
+                marker=".", #or "," "o" "+" "x"
+                markersize=8,
+                markerfacecolor="blue",
+                markeredgecolor="cyan"
+        )
+        plt.bar(x,y,width,bottom=3, #柱形底部高度
+                hatch="/") #or "l" "\" "\textbackslash\textbackslash" "//"
+        plt.barh(x,y)
+        plt.hist(x,bins) #直方图，bins可以是整数（条数）或列表
+        plt.scatter(x,y,s) #s is a list, which stands for the size of the dots
+        plt.pie(x,colors=["red","blue","yellow"],
+                autopct=%1.1f%%, #整数部分一位，小数部分一位
+                explode=[0,0.5,0], #将第二块拉出0.5
+                shadow=True,labels=["一月","二月","三月"],
+        ) #饼图
+        plt.pie(x,colors=["red","blue","yellow"],
+                autopct=%1.1f%%, #整数部分一位，小数部分一位
+                explode=[0,0.5,0], #将第二块拉出0.5
+                shadow=True,labels=["一月","二月","三月"],
+                radius=1.0,wedgeprops={"width":0.6} #内外圆半径
+        ) #圆环图
+        plt.boxplot(x,showmeans=True, #显示均值
+                    flierprops={"marker":"o", #or "," "+" "x"
+                                "markerfacecolor":"red",
+                                "markeredgecolor":"black",
+                                "markersize":8
+                    }, #异常点样式
+                    patch_artist=True, #自定义箱型
+                    boxprops={"facecolor":"red",
+                              "edgecolor":"yellow"
+                    } #箱型样式
+        ) #箱型图
+        plt.stackplot(x,y1,y2,y3,color=["red","yellow","blue"]) 
+        #面积图(可堆叠)
+        plt.errorbar(x,y,yerr=[lower_errors,upper_errors],
+                    ecolor=blue, #color of the errorbars
+                    elinewidth=3, #width of the errorbars
+                    capsize=2 #横杠大小
+        )
+        plt.imshow(x, #x是个二维列表
+                  cmap=plt.cm.cool #设置颜色
+        ) #绘制热力图
+        plt.colorbar() #显示图例
+      \end{codeblock}
+
+    \subsubsection{极坐标图表}
+      \begin{codeblock}[language=python, caption={polar plots of plt}]
+        plt.polar(theta,r) #雷达图
+        plt.thetagrid(angles,labels) #角刻度标签
+        plt.rgids(radii,rotation,labels) #r方向刻度标签
+
+        ax=plt.axes(polar=True) #建立极坐标画布
+        ax.bar(x=theta,height=data,width=0.4,color="rainbow") #绘制南丁格玫瑰图
+        ax.bar(x=theta,height=100,width=0.4,color="white") #绘制中心空白
+        ax.text(angle,height,text) #添加注释
+        ax,grid(False)
+        plt.thetagrids(angles=[],labels=[]) #刻度标签
+        plt.rgrids(radii=[20],rotation,labels=['20'])
+      \end{codeblock}
+
+    \subsubsection{三维图表}
+      \begin{codeblock}[language=python, caption={3D plots of plt}]
+        from mpl_tookits.mplot3d import Axes3D
+        fig=plt.figure()
+        ax1=plt.axes(projection="3d")
+        ax1.scatter3D(x,y,z,cmap="blue")
+        ax1.plot3D(x,y,z,"gray")
+        ax1.plot_surface(X,Y,Z,rstride=0.1,cstride=0.1) #步长越短越清晰
+        ax1.contour(X,Y,Z,zdir='x',offset=-3,cmap="cold") #绘制等高线，投影在x=3平面上
+        ax1.bar3d(X,Y,height,width,depth,Z,color="red",shade=True) #绘制柱状图,height为柱底高度
+      \end{codeblock}
+
+  \subsection{wordcloud}
+    \begin{codeblock}[language=python, caption={wordcloud}]
+      import matplotlib.pyplot as plt
+      import wordcloud as wc
+
+      text_data = """
+      Python is a popular programming language.
+      It is widely used for web development, data analysis, and artificial intelligence.
+      Word clouds are fun visualizations of text data.
+      Generate a word cloud using the wordcloud module.
+      """
+
+      # 生成词云对象
+      wordcloud = wc.WordCloud(width=800, height=400, background_color='white').generate(text_data)
+
+      # 显示词云图
+      plt.figure(figsize=(10, 5))
+      plt.imshow(wordcloud, interpolation='bilinear')
+      plt.axis('off')
+      plt.show()
+    \end{codeblock}

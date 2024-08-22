@@ -1,0 +1,182 @@
+\section{debug \& tools}
+
+  \subsection{doctest}
+    doctest可以检查函数的输出,在代码注释样例中给出一组输入输出，若结果错误会报错。
+    \begin{codeblock}[language=python, caption={doctest hello.py}]
+      from operator import floordiv, mod
+
+      def divide_exact(n, d):
+        """Return the quotient and remainder of  dividing N by D
+        >>> q, r = divide_exact(2013, 10)
+        >>> q
+        201
+        >>> r
+        2
+        """
+        return floordiv(n, d), mod(n, d)
+    \end{codeblock}
+
+    \begin{codeblock}[language=bash, caption={doctest bash}]
+      python3 -m doctest hello.py
+      **********************************************************************
+      File "/mnt/d/Desktop/python/program file/test/test_basic/Pythonproject
+      1/hello.py", line 8, in hello.divide_exact
+      Failed example:
+          r
+      Expected:
+          2
+      Got:
+          3
+      **********************************************************************
+      1 items had failures:
+        1 of   3 in hello.divide_exact
+      ***Test Failed*** 1 failures.
+    \end{codeblock}
+
+  \subsection{Try \& Assert}
+    try,except用来处理可能出现报错的情况，并提供捕获错误的功能。
+
+    常见的错误类型如下，他们都有一个共同的父类Exception
+    \begin{table}
+      \centering  
+      \caption{Types of Error}
+      \label{tab: types of error}
+      \begin{tabular}{ccc}
+        \toprule[1.5pt]
+        错误名 & 错误类型 & 例子 \\
+        \midrule
+        Syntax Error & 语法错误 & 代码结构不是Python \\
+        IndentationError & 缩进错误 & 缩进不一致或缺少缩进 \\
+        TypeError & 对象类型错误 & 将字符串与数字相加 \\
+        NameError & 命名错误 & 使用了尚未定义的变量或函数 \\
+        Attribute & 属性错误 & 使用了一个class没有的属性 \\
+        IndexError & 索引错误 & 访问超出list的索引位置 \\
+        KeyError & 键错误 & 访问字典中不存在的键 \\
+        ValueError & 值错误 & 将非数字字符串传给int() \\
+        ImportError & 导入模块错误 & 模块不存在或路径错误 \\
+        ArithmeticError & 数学错误 & 下面两个是他的子类 \\
+        ZeroDivisionError & 除以零 & 1/0 \\
+        OverflowError & 数值错误 & 算术结果超出数值类型范围 \\
+        FileNotFoundError & 文件不存在 & 以只读模式打开不存在的文件 \\
+        IOError~~OSError & 操作系统错误 & 文件操作出错 \\
+        RuntimeError & 标准错误以外的错误 & `raise'语句触发 \\
+        AssertionError & 断言错误 & assert语句触发 \\
+        StopIteration & 迭代器错误 & 迭代器没有更多项目供迭代 \\
+        \bottomrule[1.5pt]
+      \end{tabular}
+    \end{table}
+
+    \begin{codeblock}[language=python, caption={try except}]
+      try:
+          f = open('testfile.txt'); val = bad_val
+      except FileNotFoundError as e: #捕获文件打开错误，并执行以下部分
+          print(e) #输出 No such file or directory: 'testfile.txt'
+      except Exception: #捕获剩余的所有错误，exception只会执行碰到的第一个
+          print('Sorry. Something went wrong.')
+      else: #若try没有出现错误则执行
+          print(f.read()); f.close()
+      finally: #无论是否出错都会执行
+          print('Executing Finally...')
+    \end{codeblock}
+
+    raise语句可以在特定情况下手动报出错误
+    \begin{codeblock}[language=python, caption={Raise an error}]
+      try:
+          a = 2
+          if a == 2:
+              raise Exception
+      except Exception as e:
+          print(e)
+    \end{codeblock}
+
+    Python中的assert语句类似于C++assert断言，不需要导入库，可以与try，except结合使用。
+    \begin{codeblock}[language=python, caption={assert in python}]
+      def area_square(r):
+          assert r > 0, 'A length must be positive'
+          return r * r
+
+      try:
+          area_square(-1)
+      except Exception as e:
+          print(e)
+    \end{codeblock}
+
+  \subsection{Unit Testing}
+    unittest是标准库中的一个module，可以用于代码分块debug。unittest中有很多assert类型，
+    参考\href{https://docs.python.org/3/library/unittest.html#module-unittest}{\underline{unittest文档}}
+    \begin{codeblock}[language=python, caption={Unit Testing}]
+      import unittest
+      import app #假设app.py是待测的文件
+
+      class TestApp(unittest.TestCase):
+
+          @classmethod
+          def setUpClass(cls): #setUpClass会在所有test之前首先运行
+              print('setupClass')
+
+          @classmethod
+          def tearDownClass(cls): #tearDownClass会在所有test之后最后运行
+              print('teardownClass')
+
+          def setUp(self): #setUp会在每个test之前运行一次，注意此函数名不能自定义
+              self.eg1 = 10 #可以创建实例，初始化一些变量以简化test操作
+
+          def tearDown(self): #tearDown会在每个test之后运行一次，注意此函数名不能自定义
+              pass #可以删除变量、实例以保证变量不影响下一个test
+
+          def test_add(self): #检测add函数，这里函数名必须以test开头
+              result = app.add(self.eg1, 5) #检测app.py中的add函数
+              self.assertEqual(result, 15)
+
+          def test_div(self): #检测div函数
+              sefl.assertRaises(ValueError, app.div, 10, 0)
+              #检测div(10, 0)运行时是否会有ValueError报错
+              with self.assertRaises(ValueError):
+                  app.div(10, 0) #这里利用文件管理器运行，与上一句效果相同
+
+      if __name__ == '__main__':
+          unittest.main() #运行所有的test
+    \end{codeblock}
+
+    用以下语句运行测试
+    \begin{codeblock}[language=bash, caption={run unittest}]
+      python -m unittest test_app.py
+    \end{codeblock}
+
+    对于网站申请类型的脚本，我们不希望test的通过与否取决于网站是否能够连接。
+    为此，可以使用mock module。
+    \begin{codeblock}[language=python, caption={mock module}]
+      #\#\#main.py
+      import unittest
+      from unittest.mock import patch
+      from app import get_conn #假设需要检验get\_conn函数
+
+      class TestApp(unittest.TestCase):
+        
+          def test_get_conn(self):
+              with patch('app.requests.get') as mocked_get: #若连接成功，会继续运行
+                  mocked_get.return_value.ok = True
+                  mocked_get.return_value.text = "Success!" #捏造一个成功连接，返回Success
+                  result = get_conn() #试运行get\_conn
+                  mocked_get.assert_called_with('http://company.com/Schafer/May') #检验url的正确性
+                  self.assertEqual(result, 'Success') #检验get\_conn的返回值
+
+      if __name__ == '__main__':
+          unittest.main()
+
+      #\#\#app.py
+      import requests
+
+      def get_conn():
+          response = requests.get('http://company.com/Schafer/May')
+          if response.ok:
+              return response.text
+          else:
+              return "Fail to connect!"
+    \end{codeblock}
+
+  \subsection{jupyter notebook}
+    jupyter notebook可以用于代码笔记，代码汇报等，提供代码实时运行的功能。可以在ubuntu中打开。
+    \begin{codeblock}[language=bash, caption={run jupyter notebok}]
+      jupyter notebook
+    \end{codeblock}

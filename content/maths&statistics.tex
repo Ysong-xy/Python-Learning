@@ -1,0 +1,130 @@
+\section{Maths \& Statistics}
+
+  \subsection{math}
+    math module提供了最基础的数学函数。
+    \begin{codeblock}[language=python, caption={math module}]
+      math.ceil(val) #向上取整
+      math.floor(val) #向下取整
+      math.trunc(val) #向零取整
+      math.fabs(val) #取绝对值，只用于浮点数，abs通用于整数、浮点数、复数等
+
+      math.sqrt(val) #开平方根
+      math.pow(x, y) #计算`x'的`y'次方
+      math.log(x, base); math.log10(x); math.log2(x) #计算对数，默认base为e
+      math.e; math.exp(x) #得到e和e的乘方
+      math.sin(x); math.asin(x) #三角函数和反三角函数
+      math.sinh(x); math.asinh(x) #双曲函数和反双曲函数
+
+      math.factorial(x) #返回x的阶乘
+      math.gcd(x, y) #返回`x'`y'的最大公约数
+      math.degrees(x); math.radians(x) #弧度和角度转换
+    \end{codeblock}
+
+  \subsection{numpy}
+    \subsubsection{定义矩阵}
+      \begin{codeblock}[language=python, caption={Define matrices using numpy}]
+        import numpy as np
+
+        a=np.array([0.1*i for i in range(100)])
+        a=np.array([[i+5*j for i in range(5)] for j in range(5)])
+        a=np.arange(25).reshape(5,5) #reshape可以重新规定矩阵型号
+        a=np.linspace(0,10,100) #第三个参数是生成的列表长度
+        a=np.arange(0,10,0.1) #第三个参数是步长
+        a=np.logspace(0.9.10) #生成10的0-9次幂
+        a=np.eye(3) #生成三维单位阵
+        a=np.diag([1,2,3,4,5]) #生成对角阵
+        a=np.random.rand(2,3) #生成2*3随机矩阵,0-1均匀分布
+        a=np.random.random((2,3)) #生成2*3随机矩阵，用元组表示大小
+        a=np.random.randint(low,high,size=(2,3)) #生成2*3随机整数矩阵
+      \end{codeblock}
+
+    \subsubsection{特殊函数}  
+      \begin{codeblock}[language=python, caption={Advanced operations in numpy}]
+        X,Y=np.meshgrid(x,y) #将x,y扩展为一个矩阵
+        x,y=np.outer(x,y) #得到矩阵$x^{t}y$
+        x=np.append(x1,x2) #拼接array
+        a=X[1] #取出矩阵的一行
+        a=X[:,1] #取出矩阵的一列
+        X[:,0]=a #更改矩阵的一列
+        (n,m)=np.where(X>1) #查找满足条件的元素坐标
+        a=X[n,m] #取出满足条件的元素
+        l=np.argwhere(X>1) #n为坐标组成的二维array
+      \end{codeblock}
+
+    \subsubsection{矩阵运算}
+      \begin{codeblock}[language=python, caption={calculation of matrix}]
+        c=np.dot(x,y) #矩阵乘法
+        c=x*y #对应元素相乘
+        c=np.dot(a,np.linalg.inv(b)) #矩阵右除
+        c=np.dot(a,np.linalg.inv(a),(b)) #矩阵左除
+        c=np.transpose(a);c=a.T #矩阵转置
+        result=np.linalg.inv(a) #求逆矩阵
+        result=np.linalg.det(a) #求行列式
+        result=np.linalg.matrix_rank(a) #求矩阵的秩
+        matrix.sum(axis=0) #求和，1行0列
+      \end{codeblock}
+
+  \subsection{Pandas}
+    \subsubsection{Series类型}
+      Series类型是一维数组，由index和value组成。
+      \begin{codeblock}[language=python, caption={Series in Pandas}]
+        import pandas
+
+        data=['A','B','C']
+        index=['a','b','c']
+        
+        series = pandas.Series(data) #默认index从0开始编号
+        series_with_index = pandas.Series(data,index=index) #规定index
+        print(series.index,series.value) #会输出数组
+        print(series_with_index['a']) #调用Series的元素
+      \end{codeblock}
+
+    \subsubsection{DataFrame类型}
+      DataFrame的每列的名称为键，每个键对应一个数组，这个数组为值。
+      \begin{codeblock}[language=python, caption={Create a dataframe}]
+        import pandas
+
+        data = {'a':[1,2,3,4,5],'b':[6,7,8,9,10],'c':[11,12,13,14,15]}
+        index = ['A','B','C','D','E']
+        data_frame = pandas.DataFrame(data) #创建DataFrame对象,默认index从0开始编号
+        data_frame = pandas.DataFrame(data,index=index) #规定index
+        data_frame = pandas.DataFrame(data,columns=['a','b']) #指定列
+        print(data_frame)
+      \end{codeblock}
+
+    \subsubsection{读写数据}
+      Pandas模块可以将csv或excel文件转为DataFrame变量,也可以将DataFrame变量写入csv或excel文件。
+      \begin{codeblock}[language=python, caption={Read and write files using Pandas}]
+        import pandas
+
+        data = pandas.read_csv(<filename>)
+        data = pandas.read_excel(<filename>)
+        data.to_csv(<new_filename>,columns=['A','B'],index=False) #不写入行索引
+        data.to_excel(<new_filename>,columns=['A','B'],index=False) #写入excel文件
+      \end{codeblock}
+
+    \subsubsection{基本操作}
+      \begin{codeblock}[language=python, caption={Basic functions about DataFrame}]
+        data_frame['d']=[50,60,70,80,90] #增添数据
+
+        data_frame.drop([0,1],inplace=True) #按index删除，inplace表示对原数据删除不返回删除后的对象
+        data_frame.drop(labels='a',axis=1,inplace=True) #按column删除，axis=1表示列，0表示行
+
+        data_frame['a'][1] = numpy.nan; data_frame['b']=[7,8,9,10,11] #修改数据
+        data_frame.a[1] = numpy.nan; data_frame.b = [7,8,9,10,11] #这与上面是等价的
+      \end{codeblock}
+
+    \subsubsection{统计操作}
+      \begin{codeblock}[language=python, caption={Perform statistical operations using DataFrame}]
+        #数据预处理
+        null_num = data_frame.isnull().sum() #统计空缺值数量，isnull在空缺值返回True，否则返回False
+        not_null_num = data_frame.nornull().sum() #统计非空缺值数量
+        data_frame.dropna(axis,inplace=True) #删除包含空缺值的整行数据
+        data_frame.fillna(0,inplace=True) #修改空缺值
+        data_frame.fillna({'A':0,'B':1,'C':2},inplace=True) #每列空缺值用指定的值代替
+
+        #常用的统计函数
+        average = data_frame.mean() #求每列的平均值，输出一个Series
+        score = data_frame.a+data_frame.b-data_frame.c #可以直接做向量运算
+        data_frame.sort_values(['a'],axis=0,ascending=False,inplace=True) #排序，ascending为升序
+      \end{codeblock}

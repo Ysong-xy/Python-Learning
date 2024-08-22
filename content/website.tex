@@ -1,0 +1,724 @@
+\section{website}
+
+  \subsection{请求连接}
+    Python自带的urllib和urllib3模块可以实现一些网络爬虫的常用操作。外接库中的requests库则更为常用。
+    \subsubsection{urllib module}
+      利用request模块可以实现get请求方式获取网页内容。
+      \begin{codeblock}[language=python, caption={Fetch web content using GET method}]
+        import urllib.request #网络请求子模块
+
+        response = urllib.request.urlopen('http://www.baidu.com') #打开网页
+        html = response.read() #读取网页代码
+        response.close()
+
+        #也可以用with语句简化
+        with urllib.request.urlopen('http://www.baidu.com') as response:
+            html = response.read()
+        print(html)
+      \end{codeblock}
+
+      也可以实现post请求方式获取网页内容。
+      \begin{codeblock}[language=python, caption={Fetch web content using POST method}]
+        import urllib.parse #url解析和引用模块
+        import urllib.request
+
+        #使用urlencode方法对数据进行处理,并将处理后的数据设置为utf-8编码
+        data = bytes(urllib.parse.urlencode({'word':'hello'}), encoding='utf8')
+        with urllib.request.urlopen('http://httpbin.org/post', data=data) as response#打开网页
+            html = response.read()
+        print(html)
+      \end{codeblock}
+
+    \subsubsection{urllib3 module}
+      urllib3是一个更强大的Python库。
+      \begin{codeblock}[language=python, caption={urllib3 module}]
+        import urllib3
+
+        #用GET的方式连接
+        http = urllib3.PoolManager() #创建对象，用于处理连接和安全等细节
+        response = http.request('GET','https://www.baidu.com/') #连接网站
+        print(response.data) #输出读取内容
+
+        #用POST的方式连接
+        http = urllib3.PoolManager() #创建对象，用于处理连接和安全等细节
+        response = http.request('POST', 'http://httpbin.org/post', fields={'word':'hello'})
+        print(response.data) #输出读取内容
+      \end{codeblock}
+
+    \subsubsection{requests module}
+      另外有个更加人性化的第三方库requests，这个库更加常用。
+      \begin{codeblock}[language=python, caption={requests module}]
+        import requests
+
+        data={'word':'hello'}
+        response = requests.get('http://www.baidu.com',params=data) #get方法访问
+        response = requests.post('http://httpbin.org/post',data=data) #post方法访问
+        if response.ok: #检验连接是否成功
+            print(response.content) #以字节流形式输出网页源码(没有换行符和缩进，可读性差)
+            print(response.text) #以文本形式输出网页源码(带有换行符和缩进，可读性好)
+      \end{codeblock}
+
+      为了绕开反爬设计，我们可以请求header。
+      \begin{codeblock}[language=python, caption={Handling request headers}]
+        import requests
+
+        url = 'http://www.bilibili.com/'
+        headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
+            (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
+        #这里User-Agent的内容要从网络监视器中复制过来
+        response = requests.get(url,headers=headers)
+        print(response.content)
+      \end{codeblock}
+
+  \subsection{处理html文件}
+    BeautifulSoup module用于处理html文件
+    \begin{codeblock}[language=python, caption={Handling HTML}]
+      from bs4 import BeautifulSoup
+
+      with open('test.html') as html_file: #打开本地的html文件
+          soup = BeautifulSoup(html_file, 'lxml') #用lxml解析器解析html文件
+
+      source = requests.get('http://bilibili.com').text
+      soup = BeautifulSoup(source, 'lxml') #从网页上获取文件
+
+      print(soup.prettify()) #转换成易读的html文件
+      match = soup.title.text #得到文件中的某个部分
+      match_div = soup.find('div', class_='footer') #查找文件中第一个对应的内容
+      match_all = soup.find_all('div') #查找文件中所有对应的内容，返回一个列表
+    \end{codeblock}
+
+  \subsection{Flask}
+    Flask是一个常见的网站开发框架。
+    \subsubsection{create a website}
+      \begin{codeblock}[language=python, caption={create a web site}]
+        #my\_app.py
+        from flask import Flask, abort
+        app = Flask(__name__)
+
+        @app.route("/") #root page
+        @app.route("/home") #两个网址共用一个网页
+        def hello():
+            return "<h1>Hello World!</h1>"
+
+        @app.route("/error") #两个网址共用一个网页
+        def hello():
+            abort(403) #返回403错误(forbidden)
+
+        if __name__ == '__main__':
+            app.run(debug=True)
+      \end{codeblock}
+
+      \begin{codeblock}[language=bash, caption={start a web site}]
+        export FLASK_APP=my_app.py
+        flask run #运行网站，每次修改python文件需要重新启动
+        export FLASK_DEBUG=1
+        flask run #运行网站，每次修改都会立即出现在网站上
+
+        python my_app.py #直接运行网站
+      \end{codeblock}
+
+    \subsubsection{template}
+      template就是每个url的html模板，建立template可以避免将html语言写到python文件中造成混乱。
+
+      在下面的例子中，我们将为root page创建一个template/home.html文件，注意这个文件必须放在template文件夹下。
+      \begin{codeblock}[language=html, caption={template/home.html}]
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8"> <!--提供文档的元数据-->
+            <title>网页标题</title>
+            <style> <!--定义内部CSS样式-->
+                .custom-text {
+                    font-family: "Times New Roman", serif;
+                    color: green;
+                }
+            </style> <!--更好的做法是将要用到的style都写到一个.css文件中
+        </head>
+        <body>
+            <header>
+                <h1>欢迎来到我的网站</h1>
+                <nav>
+                    <ul>
+                        <li><a href="{{ url_for('home') }}">主页</a></li>
+                        <li><a href="#about">关于我们</a></li>
+                        <li><a href="/contact">联系我们</a></li>
+                    </ul>
+                </nav>
+            </header>
+            <main> <!--main part of body-->
+                <h1>这是一个<span style="color:red;">标题<\span></h1> <!--h1至h6表示标题的等级-->
+                <p style="custom-text">这是一个段落。</p></br> <!--br为空格-->
+
+                <strong>这是重要的内容。</strong>
+                <small>这是一个较小的文本。</small>
+                <em>这是一个需要强调的文本。</em>
+                <mark>这是一个被标记的文本。</mark>
+                <p>H<sub>2</sub>O 表示水。</p> <!--下标文本-->
+                <p>2<sup>2</sup> = 4</p> <!--上标文本-->
+                <p>这是一个 <code>print("Hello, World!")</code> 示例。</p>
+
+                <a href="https://www.example.com">访问示例网站</a>
+                <a href="#">点击这里回到顶部</a>
+                <img src="image.jpg" alt="描述文本">
+            </main>
+
+            <h2>无序列表</h2>
+            <ul> <!--ol有序无标记列表，li有序有标记列表-->
+                <li>苹果</li>
+                <li>香蕉</li>
+                <li>橙子</li>
+            </ul>
+
+            <div style="border: 1px solid black; padding: 10px;">
+                <h2>新闻标题</h2>
+                <p style="font-family: Arial, sans-serif; color: blue;">
+                    这是新闻的内容部分。该部分使用`&lt;div&rt;`标签包裹，以便进行样式处理和布局控制。
+                </p>
+            </div>
+            <div>
+                <button>Click me!</button> <!--按钮-->
+                <input type="text" name="username" placeholder="Enter name"> <!--文本输入框-->
+                <input type="password" name="password" placeholder="Password"> <!--密码输入框-->
+                <input type="submit" value="Submit"> <!--提交按钮-->
+                <input type="radio" name="gender" value="male"> <!--单选按钮-->
+                <input type="radio" name="gender" value="female"> <!--单选按钮-->
+                <input type="checkbox" name="agree" value="yes"> <!--复选框-->
+            </div> 
+        </body>
+        </html>
+      \end{codeblock}
+
+      html文件中有一些特殊字符需要转义:
+      \begin{multicols}{2}
+        \begin{itemize}
+          \item 大于号 小于号<~~>: \&lt;~~\&rt;
+          \item 书名号《~~》: \&Lt;~~\&Rt;
+          \item 与号 \&: \&amp;
+          \item 双引号 ": \&quot;
+          \item 单引号 ': \&\#39;
+          \item 空格 '': \&nbsp;
+          \item 乘号 $\times$: \&times;
+          \item 除号 $\div$: \&divide;
+        \end{itemize}
+      \end{multicols}
+
+      \begin{codeblock}[language=python, caption={using template in my\_app.py}]
+        @app.route("/")
+        def home():
+            return render_template('home.html')
+
+        @app.route("/post/<int:post_id>") #route可以带有变量，这里设置其为int类型
+        def post(post_id):
+            post = Post.query.get_or_404(post_id) #如果网页存在就返回post\_id，否则返回404
+            return render_template('post.html', post=post)
+      \end{codeblock}
+
+    \subsubsection{template inheritance}
+      同一个网站中template往往有很多重合部分，template inheritance可以实现统一设置模板。
+
+      下面，我们先创建一个layout.html，其中包含网页的公共部分。 
+      \begin{codeblock}[language=html, caption={layout.html}]
+        <head>
+            {% if title %}
+                <title>My app - {{ title }}</title>
+            {% else %}
+                <title>My app</title>
+            {% endif %}
+        </head>
+        <body>
+            {% block content %}{% endblock %} <!--需要替换的部分-->
+        <\body>
+      \end{codeblock}
+
+      在home.html中使用layout.html。
+      \begin{codeblock}[language=html, caption={Using template inheritance}]
+        {% extends "layout.html" %} 
+        {% block content %}
+          {% for post i posts %} #读出posts的内容
+              <h1>{{ post.name }}</h1> #两个大括号表示代码结果要输出到网页上
+              <p>with number of {{ post.number }}</p>
+          {% endfor %} #结束读取
+        {% endblock content %}
+      \end{codeblock}
+
+    \subsubsection{bootstrap}
+      bootstrap定义了一些方法来优化网页，参考\href{https://getbootstrap.com/docs/5.3/getting-started/introduction/}{bootstrap官方文档}。
+      \begin{codeblock}[language=html, caption={bootstrap}]
+        <!doctype html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link 
+                href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+                rel="stylesheet" 
+                integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+                crossorigin="anonymous">
+
+            {% if title %}
+                <title>My app - {{ title }}</title>
+            {% else %}
+                <title>My app</title>
+            {% endif %}
+        </head>
+        <body>
+            <div class="container" mt-1>  <!--利用bootstrap中的设定-->
+                <!--外间距:mt上间距，mb下间距，my上下间距-->
+                <!--外间距:ml左间距，mr右间距，mx左右间距-->
+                <!--内间距:pt左间距，pr右间距，px左右间距-->
+                <!--内间距:pl左间距，pr右间距，px左右间距-->
+                {% block content %}{% endblock %} <!--需要替换的部分-->
+            </div>
+
+            <script 
+                src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+                integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+                crossorigin="anonymous">
+            </script>
+        </body>
+        </html>
+      \end{codeblock}
+    
+    \subsubsection{External CSS}
+      External CSS(外部样式表)将网页中文本、图片等元素所需样式都写在static/main.css文件里备用。
+      main.css中可以为每个板块类定义样式，这个样式会自动生效于网页中所有对应的类。
+      
+      下面这个样例表示在`article-metadata'类的元素内的链接(<a>标签)当鼠标悬停(hover)时的样式。
+      \begin{codeblock}[language=HTML, caption={static/main.css}]
+        .article-metadata a:hover {
+          color: #333;
+          text-decoration: none;
+        }
+      \end{codeblock}
+
+      导入External CSS需要用到url\_for module
+      \begin{codeblock}[language=python, caption={url\_for}]
+        from flask import Flask, render_template, url_for
+
+        url_for('home') #返回home函数对应的url
+        url_for('static', filename='picture1.jpg') #在static文件夹下picture1.jpg的地址
+        url_for('post', post_id=1) #返回url:~~/post/1，用于decorator里有变量的情况
+      \end{codeblock}
+
+      在layout.html中调用url\_for导入样式表。
+      \begin{codeblock}[language=python, caption={layout.html}]
+        <head>
+            <link rel="stylesheet" type="text/css" 
+                  href="{{ url_for('static', filename='main.css') }}">
+            <!--static为默认目录，main.css只要在这个目录下面，url_for都会自动找到该文件-->
+        </head>
+      \end{codeblock}
+
+    \subsubsection{post data}
+      template中可以通过post传递变量，以实现信息交换。
+      \begin{codeblock}[language=python, caption={post data in flask}]
+        posts = [ #posts是一个dict组成的list
+            {'name': 'Amy', 'number': 11},
+            {'name': 'Jack', 'number': 28}
+        ]
+
+        def home():
+            return render_template('home.html', posts=posts, title="Home page")
+      \end{codeblock}
+
+      \begin{codeblock}[language=html, caption={use posts in html}]
+        <head>
+            {% if title %}
+                <title>My app - {{ title }}</title>
+            {% else %}
+                <title>My app</title>
+            {% endif %}
+        </head>
+        <body>
+            {% for post i posts %} #读出posts的内容
+                <h1>{{ post.name }}</h1> #两个大括号表示代码结果要输出到网页上
+                <p>with number of {{ post.number }}</p>
+            {% endfor %} #结束读取
+        <\body>
+      \end{codeblock}
+
+    \subsubsection{form \& field}
+      form表示网页上的表单，field表示提供用户输入的区域。一个form可以有多个输入。
+      flask-wtf module可用于处理表单。其中wtforms提供了各种表单区域，详见\href{https://wtforms.readthedocs.io/en/3.1.x/fields/}{\underline{wtf field}}。
+      wtforms.validators提供了检验输入法的方法，详见\href{https://wtforms.readthedocs.io/en/3.1.x/validators/}{\underline{wtf validators}}。
+
+      下面，我们建立一个forms.py文件来处理表单
+      \begin{codeblock}[language=python, caption={form.py}]
+        from flask_wtf import FlaskForm
+        from wtforms import StringField, PasswordField, SubmitField, BooleanField
+            #这里常用的还有还有TextAreaField文本编辑区域
+        from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+        from models import User #models将在下一目建立
+
+        class RegistrationForm(FlaskForm):
+            username = StringField('Username', validators=[DataRequired(), Length=(min=2, max=20)])
+            email = StringField('Email', #这里的第一个变量就是下面html文件中的label
+                                validators=[DataRequired(), Email()])
+            password = PasswordField('Password', validators=[DataRequired()])
+            confirm_password = PasswordField('Confirm Password', 
+                                              validators=[DataRequired(), EqualTo('password')])
+            remember = BooleanField('Remember Me')
+            submit = SubmitField('Sign Up')
+
+            def validate_username(self, username): #Validate函数会在表单提交时自动调用
+                user = User.query.filter_by(username=username.data).first()
+                if user: #用户名已存在
+                    raise ValidationError('That username is taken.')
+
+            def validate_email(self, email):
+                user = User.query.filter_by(email=email.data).first()
+                if user: #用户名已存在
+                    raise ValidationError('That email is taken.')
+      \end{codeblock}
+
+      创建register.html显示表单。<form>用于建立表单，<fieldset>用于将表单中的内容进行分组。
+      \begin{codeblock}[language=html, caption={register.html}]
+        {% extends "layout.html" %} 
+        {% block content %}
+            <div class="content-section">
+                <form method="POST" action=""> <!--action=""表示将表单数据提交到当前URL-->
+                    {{ form.hideen_tag() }} <!--防止跨站请求伪造攻击-->
+                    <fieldset class="form-group">
+                        <legend class="border-bottom mb-4">Join Today</legend>
+                        <!--legend 一般用于fieldset内部，作为注释-->
+                        <div class="form-group">
+                            {{ form.username.label(class="form-control-label") }}
+                            {% if form.username.errors %}
+                                {{ 
+                                    form.username(
+                                        class="form-control form-control-lg is invalid"
+                                    ) 
+                                }}
+                                <div class="invalid-feedback">
+                                    {% for errors in form.username.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.username(class="form-control form-control-lg") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.email.label(class="form-control-label") }}
+                            {% if form.email.errors %}
+                                {{ 
+                                    form.email(
+                                        class="form-control form-control-lg is invalid"
+                                    ) 
+                                }}
+                                <div class="invalid-feedback">
+                                    {% for errors in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.email(class="form-control form-control-lg") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password.label(class="form-control-label") }}
+                            {% if form.password.errors %}
+                                {{ 
+                                    form.password(
+                                        class="form-control form-control-lg is invalid"
+                                    )
+                                }}
+                                <div class="invalid-feedback">
+                                    {% for errors in form.password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.password(class="form-control form-control-lg") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.confirm_password.label(class="form-control-label") }}
+                            {% if form.confirm_password.errors %}
+                                {{ 
+                                    form.confirm_password(
+                                        class="form-control form-control-lg is invalid"
+                                    ) 
+                                }}
+                                <div class="invalid-feedback">
+                                    {% for errors in form.confirm_password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.confirm_password(class="form-control form-control-lg") }}
+                            {% endif %}
+                        </div>
+                    </fieldset>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-outlne-info") }}
+                    </div>
+                </form>
+            </div>
+            <div class="border-top pt-3">
+                <small class="text-muted">
+                    Already Have An Account? 
+                    <a class="ml-2" href="{{ url_for('login') }}">Sign In</a>
+                </small>
+            </div>
+        {% endblock content %}
+      \end{codeblock}
+        
+      在app.py中设置密码(防止用户信息泄露)，调用表单，接收用户提交的表单，并在处理表单后重定向。
+      \begin{codeblock}[language=python, caption={Using forms in main.py}]
+        from forms import RegistrationForm
+        from flask import Flask, render_template, url_For, redirect
+
+        app.config['SECRET_KEY'] = '114514' #密码可以由secrets module生成
+
+        @app.route("/register", methods=['GET', 'POST']) #接收GET和POST表单
+        def register():
+            form = RegistrationForm()
+            if form.validate_on_submit(): #判断提交表单是否合理
+                flash(f'Account created for {form.username.data}!', 'success') #显示一次性消息
+                    #消息类别有"error""danger""warning""success"等
+                return redirect(url_for('home'))
+            return render_template('register.html', title='Register', form=form)
+      \end{codeblock}
+
+      在layout.html中显示flash的内容并完成重定向。
+      \begin{codeblock}[language=html, caption={layout.html}]
+        {% with messages = get_flashed_messages(with_categories=true) %} <!--success就是true-->
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ messages }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+      \end{codeblock}
+
+    \subsubsection{flask-sqlalchemy}
+      flask-sqlalchemy可以用于存储网站运行产生的数据。
+
+      创建一个models.py文件，用于处理数据库。
+      \begin{codeblock}[language=python, caption={Using sqlalchemy in models.py}]
+        from flask_sqlalchemy import SQLAlchemy
+        from datetime import datetime
+        from app import db
+
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db' #///表示相对路径
+        db = SQLAlchemy(app)
+
+        class User(db.Model): #创建一个User表
+            id = db.Column(db.Integer, primary_key=True) #不重复的key，会自动生成，从1开始
+            username = db.Column(db.String(20), unique=True, nullable=False) #用户名不重复且不为空
+            email = db.Column(db.String(120), unique=True, nullable=False) 
+            image_file = db.Column(db.String(20), nullable=False, default='default.jpg') 
+                #图片用hash值记录
+            password = db.Column(db.String(60), nullable=False) #密码用hash值记录
+            posts = db.relationship('Post', backref='auther', lazy=True) #记录Post和User的关系
+                #这里Post指代下面的Post类型，lazy=True会使实例直接带有relationship信息
+
+            def __repr__(self): 
+                return f"User('{self.username}', '{self.email]', '{self.image_file}')"
+
+        class Post(db.Model): #创建一个Post表
+            id = db.Column(db.Integer, primary_key=True)
+            title = db.Column(db.String(100), nullable=False)
+            date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+                #注意这里utcnow是一个函数而不是函数的返回值，否则default会立即调用，生成一个固定的时间
+            content = db.Column(db.Text, nullable=False) #长文本类型
+            user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+                #这里user.id指代user表中的id列(表名是类名的小写)
+                #表示user\_id是user表id列的一个外键
+
+            def __repr__(self):
+                return f"Post('{self.title}', '{self.date_posted]')"
+      \end{codeblock}
+
+      在app.py文件中使用models.py
+      \begin{codeblock}[language=python, caption={Using models in main.py}]
+        from models import User, Post
+
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db' #///表示相对路径
+        db = SQLAlchemy(app) #database和app绑定，再次运行不会生成新的database 
+      \end{codeblock}
+
+      在shell创建数据库文件，并尝试加入数据。
+      \begin{codeblock}[language=python, caption={create database file in terminal}]
+        >>> from app import db
+        >>> db.create_all()
+
+        >>> from app import User, Post
+        >>> user_1 = User(username='Jack', email='J@demo.com', password='password')
+        >>> db.session.add(user_1)
+        >>> db.session.commit()
+
+        >>> User.query.all() #输出所有User
+        >>> User.query.first() #输出第一个User
+        >>> User.query.filter_by(username='Jack').all()
+        >>> user = User.quety.get(1) #按照id查找
+
+        >>> post_1 = Post(title='Blog 1', content='First Post Content!', user_id=user.id)
+        >>> db.session.add(post_1)
+        >>> db.session.commit()
+        >>> user.posts #此时可以输出用户的posts
+        >>> db.query.first().author #利用backref查询作者
+
+        >>> db.drop_all() #删除数据库中的所有内容
+      \end{codeblock}
+
+      将website产生的用户数据存入database，这里用到了hash生成，见下一目。
+      \begin{codeblock}
+        @app.route("/register", methods=['GET', 'POST']) 
+        def register():
+            form = RegistrationForm()
+            if form.validate_on_submit(): 
+                hash_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+                user = User(username=form.username.data, 
+                            email=form.email.data, 
+                            password=hashed_password)
+                db.session.add(user)
+                db.session.commit()
+                flash(f'Account created for {form.username.data}! You can log in now', 'success') 
+                return redirect(url_for('login'))
+            return render_template('register.html', title='Register', form=form)
+      \end{codeblock}
+
+    \subsubsection{Bcript \& LoginManager}
+      flask-bcrypt.Bcrypt可用于生成hash值。flask\_login.LoginManager用于控制用户登录
+      \begin{codeblock}[language=python, caption={Using Bcript in app.py}]
+        from flask import request #这将帮助我们得到GET的内容，以便重定向
+        from flask_bcrypt import Bcrypt
+        from flask_login import LoginManager, UserMixin, login_user, 
+                                current_user, logout_user, login_required
+            #这些变量可以在html中直接访问，无需通过render\_template传递
+
+        bcrypt = Bcrypt(); bcrypt.init_app(app)
+        bcrypt = Bcrypt(app) #上面两句是一样的
+        login_manager = LoginManager(app)
+        login_manager.login_view = 'login' #指向login函数
+        #当没有login而访问需要login的url时，会被重定向到login，同时通过GET传递重定向前的route
+        login_manager.login_message_catagory = 'info' #info是一个内置类
+        #这一句会改变重定向时提示的样式
+
+        pwd_hash = bcrypt.generate_password_hash('password').decode('utf-8') 
+            #这个函数重复运行会生成不同的hash值
+        bcrypt.check_password_hash(pwd_hash, 'password') #返回True
+        bcrypt.check_password_hash(pwd_hash, 'Testing') #返回False
+
+        @login_manager.user_loader
+        def load_user(user_id):
+            return User.query.get(int())
+
+        class User(db.Model, UserMixin):
+            #defination of id etc.
+
+        @app.route("/login")
+        def login():
+          user = User() #add name email etc.  
+          if current_user.is_authenticated:
+              return redirect(url_for('home'))
+          else:
+              login_user(user) #user会载入current\_user，后面可访问，如current\_user.username
+              next_page = request.args.get('next') #得到重定向前的route
+              return redirect(next_page) if next_page else redirect(url_for('home'))
+
+        @app.route("/account")
+        @login_required #需要login才能访问
+        def account():
+            form = UpdateAccontForm() #修改用户信息的表单
+            if form.validate_on_submit():
+                current_user.username = form.username.data #注意form要加data而current\_user不用
+                current_user.email = form.email.data
+                db.session.commit() #直接修改current\_user即可
+                flash('Your account has been updated!', 'success')
+                return redirect(url_for('account'))
+            elif request.method == 'GET':
+                form.username.data = current_user.username
+                form.email.data = current_user.email
+            image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+            return render_template('account.html', form=form, image_file=image_file)
+      \end{codeblock}
+
+    \subsubsection{FileField}
+      FileField允许网页传输文件(图片、文本文件等)。FileAllowed设置了允许传输的文件类型。
+      \begin{codeblock}[language=python, caption={FileField}]
+        from flask_wtf.file import FileField, FileAllowed
+        import secrets
+
+        def save_picture(form_picture):
+            random_hex = secrets.token_hex(8) #生成随机文件名，防止同名文件bug
+            _, f_ext = os.path.splitext(form_picture.filename)
+            picture_fn = random_hex + f_ext
+            picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+            form_picture.save(picture_path)
+            return picture_fn
+
+        class UpdateAccountForm(FlaskForm):
+            picture = FileField('Update Profile Picture', 
+                                validators=[FileAllowed(['jpg', 'png'])])
+
+        @app.route("/account", methods=['GET', 'POST'])
+            if form.validate_on_submit():
+                if form.picture.data:
+                    current_user.picture = save_picture(form.picture.data)
+      \end{codeblock}
+
+      在html文件中调用FileField。
+      \begin{codeblock}[language=html, caption={Using FileField in html}]
+        <form method="POST" action="" enctype="multipart/form-data">
+        <!--这里必须给出编码方式enctype-->
+          <fieldset>
+            <div class="form-group">
+                {{ form.picture.label() }}
+                {{ form.picture(class="form-control-file") }}
+                {% if form.picture.errors %}
+                    {% for error in form.picture.errors %}
+                        <span class="text-danger">{{ error }}</span></br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+          </fieldset>
+        </form>
+      \end{codeblock}
+
+    \subsubsection{Pagination}
+      Pagination可以减少post的内容，提高网站运行速度，同时避免页面过长，增加可读性。
+      为了在分页时网页的内容不混乱，我们还需要对post的内容进行排序。
+      \begin{codeblock}[language=python, caption={paginate}]
+        @app.route("/")
+        def home():
+            page = request.args.get('page', default=1, type=int)
+            posts = Post.query.order_by(Post.data)paginate(per_page=10, page=page) 
+            #以10个为1页，访问第page页
+            return render_template('home.html', posts=posts)
+      \end{codeblock}
+
+      在html文件中，可以设置一个导航栏，导航到指定页码，方便随机访问。
+      \begin{codeblock}[language=html, caption={Using pagination in home.html}]
+        {% for page_num in posts.items %}
+            <!--处理当前page的post内容-->
+        {% endfor %}
+
+        <!--导航栏-->
+        {% for page_num in posts.iter_pages(left_edfe=1, right_edge=1, 
+                                            left_current=1, right_current-2) %}
+        <!--这是一个预设，仅开头结尾和当前page前后的page_num会显示，其他page_num会缩成一个None-->
+        <!--right_current包含current page，故要比left_current多1-->
+            {% if page_num %}
+                {% if posts.page == page_num %} <!--把当前page的button设计的不一样-->
+                    <a 
+                        class="btn btn-info mb-4" 
+                        href="{{ url_for('home', page=page_num) }}">
+                        {{ page_num }}
+                    </a>
+                {% else %}
+                    <a 
+                        class="btn btn-outline-info mb-4" 
+                        href="{{ url_for('home', page=page_num) }}">
+                        {{ page_num }}
+                    </a>
+                {% endif %}
+            {% else %}
+                ... <!--缩成None的page_num显示成...-->
+            {% endif %}
+        {% endfor %}
+      \end{codeblock}

@@ -1,0 +1,493 @@
+\section{Basic grammar}
+
+  \subsection{type}
+    \begin{codeblock}[language=python, caption={variable type}]
+      >>> str = "python"
+      >>> dir(str) #获取相关用法
+      >>> type(str) #获取变量类型
+      >>> help(str) #获取guide
+      >>> isinstance(str, string) #若str为string类型，则返回True，否则返回False
+    \end{codeblock}
+
+    \begin{codeblock}[language=python, caption={basic functions}]
+      print('Hello World!')
+      print('Hello', 'World!', sep=', ', end='') #各字符串间用`, '分隔，结尾没有换行符
+      print(round(3.75, 1)) #四舍五入保留一位小数
+      float_number = 3.3; int_number = int(float_number)
+    \end{codeblock}
+
+  \subsection{condition statements}
+    \begin{codeblock}[language=python, caption={condition statement}]
+      def absolute_value(x):
+        """Return the absolute value of x."""
+        if x < 0:
+          return -x
+        elif x == 0:
+          return 0
+        else:
+          return x
+
+      def absolute_value(x):
+        return -x if x < 0 else x
+    \end{codeblock}
+
+    \begin{itemize}
+      \item False values in Python: False, 0, ' ', None
+      \item True values in Python: Anything else
+    \end{itemize}
+
+  \subsection{loop}
+    \begin{codeblock}[language=python, caption={iteration}]
+      i, total = 0, 0
+      while i < 3:
+          total += i
+          i += 1
+      else: #若没有break则执行
+          print(i)
+
+      for i in range(3):
+          total += i
+      else: #若没有break则执行
+          print(i)
+    \end{codeblock}
+
+  \subsection{function}
+    函数用于处理需要多次重复运行的同一任务。python的函数默认返回None。
+    \subsubsection{定义函数}
+      \begin{codeblock}[language=python, caption={definition of functions}]
+        def my_func(string1,string2):
+          print(string1)
+          print(string2)
+
+        def my_func1(string1='Hello',string2): #可以指定默认值
+          ''' 功能:打招呼
+              string1:默认hello
+              string2:对象名字 '''
+          print(string1)
+          print(string2)
+          return 1
+
+        def my_info(*args, **kwargs): #这里*args会创建一个元组，kwargs会创建一个字典
+          print(args)
+          print(kwargs)
+
+        #可以使用yield函数返回，yield允许函数在返回一个值的同时保存状态，并在下一次继续执行
+        def count_up_to(n):
+            counter = 1
+            while counter <= n:
+                yield counter
+                counter += 1
+
+        #调用带有yield关键字的函数时，它会返回一个生成器对象
+        gene = count_up_to(5)
+        print(next(gene))
+        for number in gene:
+            print(number)
+        #当生成器函数不再遇到yield语句时，生成会终止
+      \end{codeblock}
+
+    \subsubsection{调用函数}
+      以下是几种正确的调用方法
+      \begin{codeblock}[language=python, caption={use of function}]
+        my_func('Hello','world')
+        str1='Hello';str2='world'
+        my_func(str1,str2)
+        my_func(string1=str1,string2=str2) #写明形式参数名称为关键字参数
+        my_func(str1,string2=str2) #允许前面的形参不写名称，后面的写明
+        my_func(string2=str2,string1=str1) #写明形式参数名时可以交换顺序
+        info_value = ['Math', 'Art']; dic_value = {'name': 'John', 'age': 22}
+        my_info('Math', 'Art', name='John', age=22)
+        my_info(*info_value, **dic_value)
+      \end{codeblock}
+
+      以下是几种错误的调用方法
+      \begin{codeblock}[language=python, caption={mistakes in using functions}]
+        my_func(string1=str1,str2) #前面写明形参名称，后面必须写
+        my_func(string2=str2,str1)
+      \end{codeblock}
+
+    \subsubsection{可变参数}
+      可变参数是Python特有的设计，可变参数也被称为不定长参数，即传入函数中的实际参数可以是0个、1个或多个。
+      \begin{codeblock}[language=python, caption={variable parameters}]
+        def greet(*names): #这里会将输入接受并放在一个元组中
+          print("Hello",end=' ')
+          for item in names:
+            print(item,end=' ')
+
+        if __name__=='__main__':
+          greet('Tom','Jerry')
+
+          param=['Tom','Jerry'] #也可以调用列表
+          greet(*param) #这里不能写形参名
+      \end{codeblock}
+
+      另一种方法会将输入以``形参名:变量名''的形式存为一个字典。
+      \begin{codeblock}[language=python, caption={other variable parameters}]
+        def greet(**names): #输入转为字典
+          print('Hello')
+          for key,value in names.items():
+            if value=='male':
+              print('Mr',end=' ')
+            else:
+              print('Miss',end=' ')
+            print(key)
+
+        if __name__=='__main__':
+          greet(Tom='male',Jerry='female') #直接调用
+
+          dict={'Tom':'male','Jerry':'female'} #也可以用字典调用
+          greet(**dict) #这里也不能用关键字参数
+      \end{codeblock}
+
+    \subsubsection{静态类型函数}
+      Python的函数默认是动态类型的，可以接受所有类型的输入。当然也可以将函数定为静态类型的(和C++类似)。
+      \begin{codeblock}[language=python, caption={static functions}]
+        def square(number:int|float)->int|float:
+          return num**2
+      \end{codeblock}
+
+    \subsubsection{变量的作用域}
+      \begin{itemize}
+        \item 在函数内的定义的变量是局部变量，外部不能调用。
+        \item 函数外部定义的变量是全局变量，可以在任意位置调用该变量。
+        \item 函数内定义的变量可以通过global关键字定为全局变量。
+        \item environment就是frame的顺序，当调用某变量时，会从里向外逐层寻找该变量。
+        \item 在一个函数中，一个变量名只能始终为一个全局变量，或者始终是一个局部变量。
+        \item 在内部函数中的变量名前加上nonlocal，则内部函数的该变量与外部函数的变量是同一个。
+      \end{itemize}
+
+      \begin{codeblock}[language=python, caption={local and global}]
+        message='Hello'
+        def my_func():
+          global message
+          cnt = 0
+          def in_func():
+            nonlocal cnt
+          message='World'
+          cnt++
+        print(message) #输出'World'
+
+        #下面这段代码会报错
+        x = 'global x'
+
+        def test():
+          print(x)
+          x = 'local x'
+          print(x)
+        
+        test()
+        #解决这个报错的方法有两种，即函数内声明全局或不使用全局
+        #可以在第一个print(x)前面加上global x
+        #也可以删去第一个print(x)
+      \end{codeblock}
+
+    \subsubsection{High-order function}
+      High-order function是一类返回函数的函数，用于处理同类型的任务。
+      \begin{codeblock}[language=python, caption={High-order function}]
+        def make_adder(n):
+          """Return a function that takes K and return K + N.
+
+          >>> add_three = make_adder(3)
+          >>> add_three(4)
+          """
+          def adder(k):
+            return k + n
+          return adder
+
+        add_three = make_adder(3)
+        print(make_adder(100)(4))
+      \end{codeblock}
+
+      High-order function在音频领域经常被使用，用于制作波形。
+      \begin{codeblock}[language=python, caption={mario}]
+        from wave import open
+        from struct import Struct
+        from math import floor
+
+        frame_rate = 11025
+
+        def encode(x):
+            i = int((1 << 14) * x)
+            return Struct('h').pack(i)
+
+        def play(sampler, name='song.wav', seconds=2):
+            out = open(name, 'wb')
+            out.setnchannels(1)
+            out.setsampwidth(2)
+            out.setframerate(frame_rate)
+            t = 0
+            while t < seconds * frame_rate:
+                sample = sampler(t)
+                out.writeframes(encode(sample))
+                t += 1
+            out.close()
+
+        def tri(frequency, amplitude=0.3):
+            period = frame_rate // frequency
+            def sampler(t):
+                saw_wave = t / period - floor(t / period + 0.5)
+                tri_wave = 2 * abs(2 * saw_wave) - 1
+                return amplitude * tri_wave
+            return sampler
+
+        c_freq, e_freq, g_freq = 261.63, 329.63, 392.00
+
+        def both(f, g):
+            return lambda t: f(t) + g(t)
+
+        def note(f, start, end, fade=0.01):
+            def sampler(t):
+                seconds = t / frame_rate
+                if seconds < start:
+                    return 0
+                elif seconds > end:
+                    return 0
+                elif seconds > end - fade:
+                    return (end - seconds) / fade * f(t)
+                elif seconds < start + fade:
+                    return (seconds - start) / fade * f(t)
+                else:
+                    return f(t)
+            return sampler
+
+        c, e, g = tri(c_freq), tri(e_freq), tri(g_freq)
+        g_low = tri(g_freq / 2)
+        z = 0
+        song = note(e, z, z + 1/8)
+        z += 1/8
+        song = both(song, note(e, z, z + 1/8))
+        z += 1/4
+        song = both(song, note(e, z, z + 1/8))
+        z += 1/4
+        song = both(song, note(c, z, z + 1/8))
+        z += 1/8
+        song = both(song, note(e, z, z + 1/8))
+        z += 1/4
+        song = both(song, note(g, z, z + 1/8))
+        z += 1/2
+        song = both(song, note(g_low, z, z + 1/8))
+        z += 1/2
+
+        play(song)
+      \end{codeblock}
+
+    \subsubsection{self-reference}
+      self-reference function会返回自身或者与自身相关的函数，这样可以递归的执行不定长度的任务。
+      \begin{codeblock}[language=python, caption={self-reference}]
+      def print_all(x):
+        print(x)
+        return print_all
+      print_all(1)(2)(3) #这里会全部输出来
+      \end{codeblock}
+
+    \subsubsection{decorator}
+      \label{subsubsec:decorator}
+      decorator是一种用于修改函数或方法行为的工具，它接受另一个函数作为输入，并返回一个新的函数。decorator可以叠加多层
+      \begin{codeblock}[language=python, caption={decorator}]
+        def decorator_function(original_function):
+            def wrapper_function():
+                print('wrapper executed before {}'.format(original_function.__name__))
+                return original_function()
+            return wrapper_function
+
+        @decorator_function #将装饰器应用到display函数上，使display自动被装饰器的逻辑包裹
+        def display():
+            print('display function ran')
+
+        #display = decorator\_function(display)装饰器的效果和这一句相同
+
+        display() #上面的两句都会打印
+        
+        #若待装饰的function是有参数的，则需要给装饰器的返回值也添加上参数
+        def decorator_function(original_function)
+            def wrapper_function(*args, **kwargs)
+                print('wrapper executed before {}'.format(original_function.__name))
+                return original_function(*args, **kwargs)
+            return wrapper_function
+
+        #decorator也可以带有别的参数
+        def prefix_decorator(prefix):
+          def decorator_function(original_function):
+              def wrapper_function():
+                  print(prefix, 'wrapper executed before {}'.format(original_function.__name__))
+                  return original_function()
+              return wrapper_function
+          return decorator_function
+
+        @prefix_decorator('TESTING:')
+        def display():
+            print('display function ran')
+      \end{codeblock}
+
+    \subsubsection{function currying}
+      function currying将一个接受多个参数的函数分解为一系列每个只接受一个参数的函数，即一个函数链。
+      \begin{codeblock}[language=python, caption={function currying}]
+        def curry2(f):
+          def g(x):
+            def h(y):
+              return f(x, y)
+            return h
+          return g
+          
+        from operator import add
+        m = curry2(add)
+        add_three = m(3)
+        print(add_three(2))
+      \end{codeblock}
+  
+    \subsubsection{匿名函数}
+      Python的匿名函数也就是lambda表达式。匿名函数可以是另一个函数的参数，如sort函数的key变量。
+
+      \begin{itemize}
+        \item 只有def得到的函数会有一个本征名，在shell中输入变量名即可看到这一差异。
+        \item def函数可以有多步运行过程，而lambda表达式只能有一个表达式。
+      \end{itemize}
+
+      语法为result=lambda \lbrack arg1\lbrack arg2,$\cdots$,argn\rbrack \rbrack:expression
+      \begin{codeblock}[language=python, caption={lambda function}]
+        result = lambda r:math.pi*r*r
+        area = (lambda r: math.pi * r * r)(3)
+        print(result(5))
+
+        def area(r):
+          return r * r * math.pi
+        result = area
+      \end{codeblock}
+
+  \subsection{input and output}
+    \subsubsection{打开关闭文件}
+      \begin{codeblock}[language=python, caption={open and close files}]
+        file = open(<filename>[,mode]) #打开文件
+        print(file.name); print(file.mode) #输出文件名和打开方式
+        file.close() #关闭文件
+        print(file.closed) #检查文件是否已经关闭，已关闭会返回True
+
+        #用with语句打开文件可以确保文件被正确关闭，且可以避免文件打开错误引起的异常
+        with open(<filename>[,mode]) as file:
+      \end{codeblock}
+
+      \begin{table}[H]
+        \centering
+        \caption{Methods of Opening a File}
+        \label{tab:Methods of Opening a File}
+        \begin{tabular}{ccc}
+          \toprule[1.5pt]
+          符号 & 说明 & 注意 \\
+          \midrule
+          r & 只读模式，指针放在开头 & \multirow{4}*{文件必须存在} \\
+          rb & 二进制只读模式 & ~ \\
+          r+ & 可以读取，也可以从文件的开头覆盖 & ~ \\
+          rb+ & 二进制读写模式 & ~ \\
+          w & 只写模式 & \multirow{4}*{\makecell{若文件存在,\\则覆盖，否则\\创建新文件}} \\
+          wb & 二进制只写模式 & ~ \\
+          w+ & 只读模式打开文件并清空 & ~ \\
+          wb+ & 二进制只读模式并清空文件 & ~\\
+          a & 追加模式 & \multirow{4}*{\makecell{若文件存在，\\则指针放在末尾,\\否则创建文件}} \\
+          ab & 二进制追加模式 & ~ \\
+          a+ & 追加且可读(注意指针位置) & ~ \\
+          ab+ & 二进制追加且可读 & ~ \\
+          \bottomrule[1.5pt]
+        \end{tabular}
+      \end{table}
+
+    \subsubsection{读取写入文件}
+      \begin{codeblock}[language=python, caption={read and write files}]
+        #读取文件
+        with open('test1.txt', 'r', encoding='utf-8') as file:
+            f_contents = file.read(); f_contents = file.read(100) #读取文件前100Byte的内容
+            f_list = file.readlines()) #按行切分并组成列表
+            f_list = file.readline() #只读一行，结尾带有换行符
+            for line in file:
+                print(line, end='')遍历每一行
+            file.tell() #返回cursor在文件中的位置
+            file.seek(7) #移动cursor到第7Byte的位置
+        #写入文件
+        with open('test2.txt', 'w') as f:
+            f.write('Test') 
+            f.seek(0); f.write('Hello World!') #这里的内容会覆盖原有的内容
+
+        #读写非文本文件，可以用二进制读写，下面以创建一个图片副本为例
+        with open('puppy.jpg', 'rb') as rf:
+            with open('puppy.jpg', 'wb') as wf:
+                chunk_size = 4096
+                rf_chunk = rf.read(chunk_size)
+                while len(rf_chunk) > 0:
+                    wf.write(rf_chunk)
+                    rf_chunk = rf.read(chunk_size)
+      \end{codeblock}
+
+      read()和write()函数还有以下可选参数：
+      \begin{itemize}
+        \item offset:移动字符个数
+        \item whence:指定从什么位置开始计算，0表示开头，1表示当前位置，2表示文件末尾(只能在二进制模式下使用)
+      \end{itemize}
+
+    \subsubsection{上下文管理器}
+      上下文管理器就是可以在with语句中被调用的特殊函数，可以自动管理资源的分配和释放。
+      利用contextmanager decorator可以将普通的函数转换成上下文管理器。
+      \begin{codeblock}[language=python, caption={contextmanager}]
+        import contextlib
+
+        @contextlib.contextmanager
+        def open_file(file, mode): #自定义打开文件的函数
+            try:
+                f = open(file, mode) #yield之前的语句将在进入with语块时执行
+                yield f
+            finally:
+                f.close() #yield之后的语句将在退出with语块时执行
+
+        with open_file('test.txt', 'w):
+            f.write('Hello, world!')
+
+        import os
+
+        @contextlib.contextmanager
+        def change_dir(destination): #自定义切换目录的函数
+        try:
+            cwd = os.getcwd()
+            os.chdir(destination)
+            yield
+        finally:
+            os.chdir(cwd)
+      \end{codeblock}
+
+    \subsubsection{处理.csv文件}
+      csv是一种表格类型的文件，其每行各单元之间有分隔符，默认分隔符是`,'。若单元格内部也有域分隔符相同的字符，
+      该单元格会带引号。
+      \begin{codeblock}[language=python, caption={read and write .csv files}]
+        import csv
+
+        with open('test.csv', 'r') as csv_file:
+          csv_reader = csv.reader(csv_file) #csv\_reader是一个迭代器
+          next(csv_reader) #跳过第一行
+          for line in csv_reader:
+            print(line) #这里每一行是一个list
+
+          dic_reader = csv.DictReader(csv_file) #以字典形式读取
+          #若行数为n，则得到一个长度为n-1的迭代器，第1行是key，其余n-1行为value
+
+        with open('new_names.csv', 'w') as new_file:
+          csv_writer = csv.writer(new_file, delimiter='\t') #这里设定了分隔符
+          csv_writer.writerow(list(range(5)))
+
+          dic_writer = csv.DictWriter(new_file, fieldnames=['number', 'name', 'score'])
+          #以字典形式写入，fieldnames为colomn名，即第一行
+          csv_writer.writeheader() #写入第一行的fieldnames
+          csv_writer.writerow({'number': 1, 'name': 'Jack', 'score': 98})
+      \end{codeblock}
+
+    \subsubsection{处理.json文件}
+      json库可以用于处理.json文件(JavaScript Object Notation)。json文件中的object会被处理称dict，array会被处理生list，
+      其他类型的变量也会对应处理。
+      \begin{codeblock}[language=python, caption={json module}]
+        import json
+
+        data = json.loads(json_string) #将json文件的数据类型转换为python中的数据类型
+        new_json_string = json.dumps(data, indent=2, sort_key=true) #将python语句转换称json语句
+
+        with open('test.json') as f:
+            data = json.load(f) #读取json文件的内容
+        with open('new_test.json', 'w') as wf:
+            json.dump(data, f) #写入json文件
+        #可选：indent设置缩进为2，sort\_key设置排序所有键
+      \end{codeblock}

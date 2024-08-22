@@ -1,0 +1,232 @@
+\section{Class}
+
+  \subsection{定义类模板}
+    \subsubsection{基本结构}
+      \begin{codeblock}[language=python, caption={define a class}]
+        class User: 
+            '''这是一个学生用户类''' #类的说明
+            #以下是静态成员变量，Python中成为类的属性
+            student_user = 'Student User' 
+            student_number = 0
+        
+            def __init__(self, name, number): #构造函数
+                self.__name=name #这里名字设置为私有成员，这里变量是非静态成员，python称之为实例属性
+                self.number = number; 
+                User.student_number += 1
+                #这里的name，number是非静态成员变量，Python中成为实例的属性
+        
+            def __str__(self): #输出运算的重载
+                return f'{self.number} {self.__name}'
+        
+            @property
+            def name(self):
+                return self.__name
+        
+            @name.setter
+            def name(self, name):
+                self.__name = name
+
+            def introduce(self): #self类似*this指针
+                print("I'm ", self.__name, ", my number is ", self.number, sep='')
+
+            @staticmethod
+            def greet(input_student): #静态成员函数
+                print(f"Hello, my name's {self.__name}!")
+
+            @classmethod 
+            def get_info(cls): #类方法，其第一个变量是类，常用于类型转换，类属性操作等
+                print(f"There are {cls.student_number} {cls.student_user} in total.")
+      \end{codeblock}
+
+    \subsubsection{访问限制}
+      Python没有对属性和方法的访问权限进行限制。为了保证类内部某些属性不被外部访问，可以在属性或方法名前(或前后)加上双下划线。
+      \begin{itemize}
+        \item \_\_foo\_\_:首尾双下划线表示定义特殊方法，一般是系统定义名字。
+        \item \_\_foo:双下划线表示私有成员,只允许所在的类调用。
+        \item \_foo:单下划线表示保护成员，即C++中的protected成员。
+      \end{itemize}
+
+    \subsubsection{属性}
+      Python中，数据成员被称为属性。可以通过@property将一个方法转换为属性，转换后可以直接通过方法名调用该方法，无需添加()。
+      这样做可以简化代码，也为属性添加安全保护,即添加了@property的属性是只读的(这是由于return时经过了复制传递)。
+
+      \begin{codeblock}[language=python, caption={property of class}]
+        class User: 
+            ''' 用户类 ''' #类的说明
+            @property
+            def name(self);
+                return self.__name #这个name属性被设定为只读的
+      \end{codeblock}
+
+      @name.setter可以在给属性name赋值时运行
+      \begin{codeblock}[language=python, caption={setter of class}]
+        @name.setter #这里name是属性名称
+        def name(self, name)
+            if len(name) < 20:
+                self.__name=name
+      \end{codeblock}
+
+      @name.deleter属性可以定义一个在删除name属性时执行的函数。
+      \begin{codeblock}[language=python, caption={deleter}]
+        @name.deleter
+        def name(self):
+            print('Delete Name!')
+            self.__name = None
+        del student1.__name
+      \end{codeblock}
+
+    \subsubsection{类的特殊成员(魔术方法)}
+      \begin{codeblock}[language=python, caption={Special members for class}]
+        print(User.__class__) #类的名称
+        print(User.__bases__) #类的基类
+        print(User.__dict__) #类的数据成员及对应的值，输出一个字典
+
+        def __new__(cls, *args, **kwargs): #创建类的实例
+            print(f"Run new with: cls={cls}, args={args}, kwargs={kwargs}")
+            return super().__new__(cls) #调用父类的\_\_new\_\_方法，并传入当前类作为参数
+
+        def __del__(self): #对象删除时调用的方法
+
+        def __init__(self, name, number): #接收并初始化实例
+            self.__name=name #这里名字设置为私有成员，这里的变量是非静态成员，python中称之为实例属性
+            self.number = number; 
+            User.student_number += 1
+            #这里的name，number是非静态成员变量，Python中成为实例的属性
+            #Python中，一个类函数只能有一个\_\_init\_\_函数，若需要多个构造函数，可以用classmethod实现
+        #在实例创建时，会先调用\_\_new\_\_在调用\_\_init\_\_
+
+        def __str__(self): #print()和str()的重载
+            return f'{self.number} {self.__name}'
+        def __repr__(self): #返回一个Python合法的字符串，使之可以用eval重建
+            return(f"User({self.__name}, {self.number})")
+            #The goal of \_\_repr\_\_ is to be unambiguous
+            #The goal of \_\_str\_\_ is to be readable
+        student1 = User("Amy", 11); repr_str = repr(student1)
+        copy_student1 = eval(repr_str)
+        def __format__(self, format_spec): #重载str.format()和f-string
+
+        def __bool__(self): #bool()的重载
+
+        def __add__(self, other): #重载+
+        def __iadd__(self, other): #重载+=
+        def __sub__(self, other): #重载-
+        def __isub__(self, other): #重载-=
+        def __mul__(self, other): #重载*
+        def __imul__(self, other): #重载*=
+        def __truediv__(self, other): #重载/
+        def __itruediv__(self, other): #重载/=
+        def __floordiv__(self, other): #重载//
+        def __mod__(self, other): #重载\%
+        def __pow__(self, other): #重载\*\*
+        def __eq__(self, other): #重载==
+        def __ne__(self, other): #重载!=
+        def __lt__(self, other): #重载<
+        def __le__(self, other): #重载<=
+        def __gt__(self, other): #重载>
+        def __ge__(self, other): #重载>=
+
+        def __len__(self): #重载len()
+        def __getitem__(self, key): #重载\lbrack\rbrack，读取值
+        def __setitem__(self, key, val): #重载\lbrack\rbrack=，修改值
+        def __delitem__(self, key): #重载del \lbrack\rbrack，删除值
+        def __iter__(self): #返回迭代器，重载iter()
+        def __next__(self): #返回迭代器的下一个值，重载next()
+
+        def __call__(self, x): #允许实例像function一样被调用
+            return self.__name + x
+        #既然class可以像function一样被调用，那class也可以成为\hyperref[subsubsec:decorator]{\underline{decorator}}
+        class decorator_class:
+            def __init__(self, original_function):
+                self.original_function = original_function
+
+            def __call__(self, *args, **kwargs):
+                print('call method executed before {}'.format(self.original_function.__name__))
+                return self.original_function(*args, **kwargs)
+        @decorator_class
+        def display():
+            print('display function ran')
+
+        def __enter__(self): #进入with语句时自动调用
+        def __exit__(self, exc_type, exc_value, traceback): 
+        #离开with语句时自动调用(正常和非正常退出都会调用)
+        #三个参数分别是异常类型、异常值和异常回溯信息，返回True会一直异常，否则异常会继续传播 
+      \end{codeblock}
+        
+  \subsection{类的使用}
+    \subsubsection{创建类的实例}
+      \begin{codeblock}[language=python, caption={Create an instance of class}]
+        student1 = User('Amy', 11) 
+      \end{codeblock}
+
+    \subsubsection{类成员的使用}
+      \begin{codeblock}[language=python, caption={Using class members}]
+        print(student.student_number); print(User.student_number) #都输出1
+        print(student.number); student1.number = 1 #这里number无法修改
+
+        student1.introduce() #输出I'm Amy, my number is 11
+        User.introduce(student1) #效果与上一句相同
+
+        User.greet(student1) #输出Hello, my name's Amy!
+        student1.greet(student1) #效果与上一句相同
+
+        User.get_info() #输出There are 1 Student User in total.
+        student1.get_info() #效果与上一句相同
+        print(student1) #这里会调用\_\_str\_\_函数，输出11 Amy
+      \end{codeblock}
+
+  \subsection{继承}
+    Python的继承默认是公有继承。继承的内容有类的属性，实例方法，类方法，静态方法，特殊方法，
+    私有成员不会被继承。类方法在继承时，会以子类作为第一个参数。
+
+    Python中的所有类都继承自builtins.object类。
+    \begin{codeblock}[language=python, caption={Class inheritance}]
+      class Student(User)
+          def __init__(self, grade, name, number):
+              super().__init__(name, number) #调用基类的构造函数
+              self.__grade = grade
+    \end{codeblock}
+
+    子类可以重写父类中的方法，这与C++，Java没什么区别，只是Python没有虚函数机制。
+
+  \subsection{有关类的内置函数}
+    由于python中的类在访问和添加成员的操作上限制较少，可以调用一些内置函数来检查这些
+    类的合理性。
+    \begin{codeblock}[language=python, caption={built-in functions about class}]
+      isinstance(object, classinfo) #检查object的类别是不是classinfo
+      isinstance(student1, User) #返回True
+
+      issubclass(cls, classinfo) #检查cls类是不是classinfo的子类
+      issubclass(Student, User) #返回True
+
+      hasattr(object, name) #检查object是否有name属性
+      hasattr(student1, "number") #返回True
+      
+      callable(object) #检查object是否可以像函数一样被调用
+      callable(student1.name) #返回False
+      callable(student1.greet) #返回True
+    \end{codeblock}
+
+  \subsection{类的典型例子}
+    \subsubsection{文件管理类}
+      文件管理类可以实现打开创建文件，读写文件，文件异常处理等工作
+      \begin{codeblock}[language=python, caption={File management class}]
+        class Open_File():
+
+            def __init__(self, filepath, mode):
+                self.filepath = filepath
+                self.mode = mode
+
+            def __enter__(self):
+                print(f"Entering the file: {self.filepath}")
+                self.file = open(self.filepath, self.mode)
+                return self.file
+
+            def __exit__(self, exc_type, exc_val, traceback)
+                print(f"Exiting the file: {self.filepath}")
+                if exc_type:
+                    print(f"An exception occurred: {exc_type}, {exc_value}")
+                self.file.close()
+
+        with Open_File('test.txt', 'w') as f:
+            f.write('Testing')
+      \end{codeblock}
