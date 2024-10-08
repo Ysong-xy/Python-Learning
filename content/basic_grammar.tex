@@ -6,6 +6,7 @@
       >>> dir(str) #获取相关用法
       >>> type(str) #获取变量类型
       >>> help(str) #获取guide
+      >>> id(str) #获取内存地址
       >>> isinstance(str, string) #若str为string类型，则返回True，否则返回False
     \end{codeblock}
 
@@ -15,6 +16,44 @@
       print(round(3.75, 1)) #四舍五入保留一位小数
       float_number = 3.3; int_number = int(float_number)
     \end{codeblock}
+
+  \subsection{operator precedence}
+      \begin{table}[H]
+        \centering
+        \caption{Python 运算符优先级表}
+        \begin{tabular}{cc}
+          \toprule[1.5pt]
+          \textbf{优先级} & \textbf{运算符} \\ 
+          \midrule
+          1 & \texttt{()} \quad \text{函数调用} \\  
+          2 & \texttt{[]} \quad \text{下标} \\ 
+          3 & \texttt{.} \quad \text{属性访问} \\  
+          4 & \texttt{**} \quad \text{指数运算} \\  
+          5 & \texttt{+, -} \quad \text{正负号} \\  
+          6 & \texttt{\~} \quad \text{按位非} \\
+          7 & \texttt{*, /, //, \%} \quad \text{乘, 除, 地板除, 取余} \\ 
+          8 & \texttt{+, -} \quad \text{加, 减} \\ 
+          9 & \texttt{<<, >>} \quad \text{左移, 右移} \\ 
+          10 & \texttt{\&} \quad \text{按位与} \\ 
+          11 & \texttt{\textbar} \quad \text{按位或} \\ 
+          12 & \texttt{\^} \quad \text{按位异或} \\ 
+          13 & \texttt{<, <=, >, >=, ==, !=} \quad \text{比较运算符} \\ 
+          14 & \texttt{=} \quad \text{赋值运算符} \\ 
+          15 & \texttt{in  not in} \quad \text{逻辑包含/不包含} \\
+          16 & \texttt{not} \quad \text{逻辑非} \\ 
+          17 & \texttt{and} \quad \text{逻辑与} \\ 
+          18 & \texttt{or} \quad \text{逻辑或} \\ 
+          \bottomrule[1.5pt]
+        \end{tabular}
+      \end{table}
+
+      ``==''checks for equality, ``is'' checks for identity(sharing the same memory).
+      \begin{codeblock}[language=python, caption={is \& ==}]
+        "Jack" == "Jack" #return True
+        "Jack" is "Jack" #return False
+      \end{codeblock}
+
+      无论是x = x+1还是x += 1都会重新给x分配内存。
 
   \subsection{condition statements}
     \begin{codeblock}[language=python, caption={condition statement}]
@@ -72,6 +111,7 @@
           print(kwargs)
 
         #可以使用yield函数返回，yield允许函数在返回一个值的同时保存状态，并在下一次继续执行
+        #带yield的函数是一个iterator
         def count_up_to(n):
             counter = 1
             while counter <= n:
@@ -458,22 +498,22 @@
         import csv
 
         with open('test.csv', 'r') as csv_file:
-          csv_reader = csv.reader(csv_file) #csv\_reader是一个迭代器
-          next(csv_reader) #跳过第一行
-          for line in csv_reader:
-            print(line) #这里每一行是一个list
+            csv_reader = csv.reader(csv_file) #csv\_reader是一个迭代器
+            next(csv_reader) #跳过第一行
+            for line in csv_reader:
+                print(line) #这里每一行是一个list
 
           dic_reader = csv.DictReader(csv_file) #以字典形式读取
           #若行数为n，则得到一个长度为n-1的迭代器，第1行是key，其余n-1行为value
 
         with open('new_names.csv', 'w') as new_file:
-          csv_writer = csv.writer(new_file, delimiter='\t') #这里设定了分隔符
-          csv_writer.writerow(list(range(5)))
+            csv_writer = csv.writer(new_file, delimiter='\t') #这里设定了分隔符
+            csv_writer.writerow(list(range(5)))
 
-          dic_writer = csv.DictWriter(new_file, fieldnames=['number', 'name', 'score'])
-          #以字典形式写入，fieldnames为colomn名，即第一行
-          csv_writer.writeheader() #写入第一行的fieldnames
-          csv_writer.writerow({'number': 1, 'name': 'Jack', 'score': 98})
+            dic_writer = csv.DictWriter(new_file, fieldnames=['number', 'name', 'score'])
+            #以字典形式写入，fieldnames为colomn名，即第一行
+            csv_writer.writeheader() #写入第一行的fieldnames
+            csv_writer.writerow({'number': 1, 'name': 'Jack', 'score': 98})
       \end{codeblock}
 
     \subsubsection{处理.json文件}
@@ -489,5 +529,31 @@
             data = json.load(f) #读取json文件的内容
         with open('new_test.json', 'w') as wf:
             json.dump(data, f) #写入json文件
-        #可选：indent设置缩进为2，sort\_key设置排序所有键
+        #可选:indent设置缩进为2，sort\_key设置排序所有键
+      \end{codeblock}
+
+    \subsubsection{处理zip文件}
+      \begin{codeblock}[language=python, caption={zip file}]
+        import zipfile
+        
+        my_zip = zipfile.ZipFile('files.zip', 'w') #创建zip file
+        my_zip.write('test.txt') #将已有的文件写入zip file
+        my_zip.write('thumbnail.png')
+        my_zip.close()
+
+        with zipfile.ZipFile('files.zip', 'w') as my_zip: #使用file manager
+            my_zip.write('test.txt')
+            my_zip.write('thumbnail.png')
+        with zipfile.ZipFile('files.zip', 'w', compression=zipfile.ZIP_DEFLATED) as my_zip: #压缩文件
+
+        with zipfile.ZipFile('files.zip', 'r') as my_zip: #压缩文件
+            print(my_zip.namelist()) #获取zip file中的文件表
+            my_zip.extractall('files') #提取文件到files文件夹下
+            my_zip.extract('thumbnail.png') #提取一个文件
+
+        import shutil
+
+        shutil.make_archive('another', 'zip', 'files') #打包files文件夹到another.zip
+        shutil.unpack_archive('another.zip', 'another') #加压another.zip到another文件夹
+        #压缩文件可选zip,tar,gztar,bztar,xztar
       \end{codeblock}

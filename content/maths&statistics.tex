@@ -14,6 +14,7 @@
       math.e; math.exp(x) #得到e和e的乘方
       math.sin(x); math.asin(x) #三角函数和反三角函数
       math.sinh(x); math.asinh(x) #双曲函数和反双曲函数
+      math.gamma(x) #gamma函数$\Gamma(x)$
 
       math.factorial(x) #返回x的阶乘
       math.gcd(x, y) #返回`x'`y'的最大公约数
@@ -25,17 +26,18 @@
       \begin{codeblock}[language=python, caption={Define matrices using numpy}]
         import numpy as np
 
-        a=np.array([0.1*i for i in range(100)])
-        a=np.array([[i+5*j for i in range(5)] for j in range(5)])
-        a=np.arange(25).reshape(5,5) #reshape可以重新规定矩阵型号
-        a=np.linspace(0,10,100) #第三个参数是生成的列表长度
-        a=np.arange(0,10,0.1) #第三个参数是步长
-        a=np.logspace(0.9.10) #生成10的0-9次幂
-        a=np.eye(3) #生成三维单位阵
-        a=np.diag([1,2,3,4,5]) #生成对角阵
-        a=np.random.rand(2,3) #生成2*3随机矩阵,0-1均匀分布
-        a=np.random.random((2,3)) #生成2*3随机矩阵，用元组表示大小
-        a=np.random.randint(low,high,size=(2,3)) #生成2*3随机整数矩阵
+        a = np.array([0.1*i for i in range(100)])
+        a = np.array([[i+5*j for i in range(5)] for j in range(5)])
+        a = np.arange(25).reshape(5,5) #reshape可以重新规定矩阵型号
+        a = np.linspace(0,10,100) #第三个参数是生成的列表长度
+        a = np.arange(0,10,0.1) #第三个参数是步长
+        a = np.logspace(0.9.10) #生成10的0-9次幂
+        a = np.eye(3) #生成三维单位阵
+        a = np.diag([1,2,3,4,5]) #生成对角阵
+        a = np.random.rand(2,3) #生成2*3随机矩阵,0-1均匀分布
+        a = np.random.randn(2, 3)
+        a = np.random.random((2,3)) #生成2*3随机矩阵，用元组表示大小
+        a = np.random.randint(low,high,size=(2,3)) #生成2*3随机整数矩阵
       \end{codeblock}
 
     \subsubsection{特殊函数}  
@@ -46,85 +48,208 @@
         a=X[1] #取出矩阵的一行
         a=X[:,1] #取出矩阵的一列
         X[:,0]=a #更改矩阵的一列
-        (n,m)=np.where(X>1) #查找满足条件的元素坐标
         a=X[n,m] #取出满足条件的元素
+        (n,m)=np.where(X>1) #查找满足条件的元素坐标，n和m都是array
         l=np.argwhere(X>1) #n为坐标组成的二维array
       \end{codeblock}
 
     \subsubsection{矩阵运算}
       \begin{codeblock}[language=python, caption={calculation of matrix}]
-        c=np.dot(x,y) #矩阵乘法
-        c=x*y #对应元素相乘
-        c=np.dot(a,np.linalg.inv(b)) #矩阵右除
-        c=np.dot(a,np.linalg.inv(a),(b)) #矩阵左除
-        c=np.transpose(a);c=a.T #矩阵转置
+        c = np.dot(x,y) #矩阵乘法
+        c = x*y #对应元素相乘
+        c = np.transpose(a);c=a.T #矩阵转置
+        c = np.transpose(a, (2, 0, 1)) #调整矩阵轴的顺序
+        c = np.linalg.norm(x) #求x的$L_2$范数
         result=np.linalg.inv(a) #求逆矩阵
         result=np.linalg.det(a) #求行列式
         result=np.linalg.matrix_rank(a) #求矩阵的秩
-        matrix.sum(axis=0) #求和，1行0列
+        result = np.dot(a,np.linalg.inv(b)) #矩阵右除
+        result = np.dot(np.linalg.inv(a),(b)) #矩阵左除
+        matrix.sum(axis=0) #求和，axis的轴会消失
       \end{codeblock}
 
   \subsection{Pandas}
-    \subsubsection{Series类型}
+    \subsubsection{Series}
       Series类型是一维数组，由index和value组成。
       \begin{codeblock}[language=python, caption={Series in Pandas}]
-        import pandas
+        import pandas as pd
 
-        data=['A','B','C']
-        index=['a','b','c']
+        data=['A','B','C']; index=['a','b','c']
+        dict_data = {'a': 'A', 'b': 'B', 'c': 'C'} 
         
-        series = pandas.Series(data) #默认index从0开始编号
-        series_with_index = pandas.Series(data,index=index) #规定index
+        series = pd.Series(data) #默认index从0开始编号
+        series_with_index = pd.Series(data,index=index) #规定index
+        series_with_index = pd.Series(dict_data) #这一句与上一句相同
         print(series.index,series.value) #会输出数组
         print(series_with_index['a']) #调用Series的元素
       \end{codeblock}
 
-    \subsubsection{DataFrame类型}
+    \subsubsection{DataFrame}
       DataFrame的每列的名称为键，每个键对应一个数组，这个数组为值。
       \begin{codeblock}[language=python, caption={Create a dataframe}]
-        import pandas
+        import pandas as pd
 
         data = {'a':[1,2,3,4,5],'b':[6,7,8,9,10],'c':[11,12,13,14,15]}
         index = ['A','B','C','D','E']
-        data_frame = pandas.DataFrame(data) #创建DataFrame对象,默认index从0开始编号
-        data_frame = pandas.DataFrame(data,index=index) #规定index
-        data_frame = pandas.DataFrame(data,columns=['a','b']) #指定列
+        data_frame = pd.DataFrame(data) #创建DataFrame对象,默认index从0开始编号
+        data_frame = pd.DataFrame(data, index=index) #规定index
+        data_frame = pd.DataFrame(data, columns=['a','b']) #指定列
         print(data_frame)
+
+        df.set_index('a'， inplace=True) #将column `a'设定成index，仅用于创建时没有默认index的情况
+        df.reset_index(inplace=True) #将index重置为从0开始编号，仅用于创建时没有默认index的情况
       \end{codeblock}
 
     \subsubsection{读写数据}
       Pandas模块可以将csv或excel文件转为DataFrame变量,也可以将DataFrame变量写入csv或excel文件。
       \begin{codeblock}[language=python, caption={Read and write files using Pandas}]
-        import pandas
+        import pandas as pd
 
-        data = pandas.read_csv(<filename>)
-        data = pandas.read_excel(<filename>)
-        data.to_csv(<new_filename>,columns=['A','B'],index=False) #不写入行索引
-        data.to_excel(<new_filename>,columns=['A','B'],index=False) #写入excel文件
+        data = pd.read_csv('data.csv')
+        data = pd.read_excel('data.xlsx')
+        data = pd.read_csv('data.csv', index_col='Id') #设置指定column作为index
+        data = pd.read_csv('data.csv', na_values=['NA', 'Missing']) #将给定值替换成NaN
+        d_parser = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %I-%p')
+        data = pd.read_csv('data.csv', parse_date=['Date'], date_parser=d_parser) 
+            #将Date列转为datetime
+        data = pd.read_json('data.json', orient='records', lines=True) #读取列表形式的json文件
+
+        data.to_csv('data.csv', columns=['A','B'], index=False) #不写入行索引
+        data.to_csv('data.tsv', sep='\t') #写入tsv文件
+        data.to_excel('data.xlsx', columns=['A','B'], index=False) #写入excel文件
+        data.to_json('data.json', orient='records', lines=True) #)以列表形式写入json文件，默认是字典形式
+      \end{codeblock}
+
+    \subsubsection{数据库交互}
+      pandas中的数据也可以通过SQL alchemy进行快速的存储和访问。
+      \begin{codeblock}[language=python, caption={pandas \& database}]
+        from sqlalchemy import create_engine
+        import psycopg2
+
+        engine = create_engine('postgresql://dbuser:dbpass@localhost:5432/sample_db')
       \end{codeblock}
 
     \subsubsection{基本操作}
       \begin{codeblock}[language=python, caption={Basic functions about DataFrame}]
-        data_frame['d']=[50,60,70,80,90] #增添数据
+        A = data_frame.to_numpy(); data_frame = pd.DataFrame(A) #DataFrame和numpy转换
 
-        data_frame.drop([0,1],inplace=True) #按index删除，inplace表示对原数据删除不返回删除后的对象
-        data_frame.drop(labels='a',axis=1,inplace=True) #按column删除，axis=1表示列，0表示行
+        pd.set_option('display.max_columns', 20) #设置最多显示列数
+        pd.set_option('display.max_rows', 20) #设置最多显示行数
+        print(data_frame.columns) #输出所有列
+        print(data_frame.shape) #输出行列数
+        print(data_frame.dtype) #输出每一列的数据类型，混合数据类型显示为object
+        print(data_frame.info()) #输出DataFrame的基本信息
+        print(df.head(10)); print(df.tail(10)) #输出前/后10行
 
-        data_frame['a'][1] = numpy.nan; data_frame['b']=[7,8,9,10,11] #修改数据
-        data_frame.a[1] = numpy.nan; data_frame.b = [7,8,9,10,11] #这与上面是等价的
+        data_frame[['a', 'b']] #返回指定列组成的DataFrame
+        data_frame.iloc[0] #输出第一行
+        data_frame.iloc[[0, 1]] #输出指定行
+        data_frame.iloc[[0, 1], [1, 2]] #输出第1，2行第2，3列
+        data_frame.loc[[0, 1], ['a', 'b']] #输出index为0，1，column为`a',`b'的DataFrame
+        data_frame.loc[0:1, 'a':'b']] #与上面一句相同
+            #loc的变量也可以是filter(True/False Series)
+        data_frame[data_frame > 0] #Filtering，用NaN对齐
+        data_frame[data_frame['b'].isin([7, 8, 9])] #Filtering using list
+        data_frame[data_frame['b'].str.contains('Python', na=False)] 
+            #提取column `b'字符串中包含`Python'的行，NaN不提取
+
+        #updata column
+        data_frame.columns = ['Column_'+i for i in data_frame.columns]
+        data_frame.columns = df.columns.str.replace(' ', '_') #将column中的空格替换为下划线
+        data_frame.rename(columns={'a': 'Column_a', 'b': 'Column_b'}, inplace=True) #替换columns名
+
+        #update values
+        data_frame.loc['A':'B', 'a'] = [10, 11] #更新若干单元格
+        data_frame.loc['A':'B', 'a':'b'] = [[10, 11], [12, 13]] #更新若干单元格
+        data_frame.loc['B'] = [11, 12, 13] #更新一行
+        data_frame['d'] = ['AXIS', 'Root', 'TeX', 'Python', 'JavaScript'] #增添或修改一列数据
+        data_frame['d'] = data_frame['d'].str.lower() #全部改成小写
+        data_frame._append({'a': 17}, ignore_index=True) #插入一行，reset index以避免冲突，用NaN补齐
+        df_total = data_frame._append(df, ignore_index=True) #合并两个DataFrame
+        df_total = data_frame.concat([df1, df2], axis='columns') #合并两个DataFrame
+        df_total = data_frame.concat([df1, df2], axis='index') #合并两个DataFrame
+
+        #drop values
+        data_frame.drop(index=['A', 'B'], inplace=True) #按index删除，inplace表示直接替换原数据
+        data_frame.drop(columns=['a', 'b'], inplace=True) #按column删除
       \end{codeblock}
 
     \subsubsection{统计操作}
       \begin{codeblock}[language=python, caption={Perform statistical operations using DataFrame}]
         #数据预处理
+        data_frame['d_len'] = data_frame['d'].apply(len) #对每个元素进行函数操作
+        data_frame.apply(len, axis='rows') #对每一行进行len操作，即获取column数
+        df_len = data_frame.applymap(len) #对DataFrame中每个元素进行len操作
+        sub_d = data_frame['d'].map({'Python': 'C++', 'JavaScript': 'Java'}) 
+            #替换Series的内容，未匹配的替换成NaN
+        sub_d = data_frame['d'].replace({'Python': 'C++', 'JavaScript': 'Java'}) 
+            #替换Series的内容，未匹配的会保持原来的值
+
+        #处理空缺值
         null_num = data_frame.isnull().sum() #统计空缺值数量，isnull在空缺值返回True，否则返回False
         not_null_num = data_frame.nornull().sum() #统计非空缺值数量
-        data_frame.dropna(axis,inplace=True) #删除包含空缺值的整行数据
-        data_frame.fillna(0,inplace=True) #修改空缺值
+        data_frame.dropna(axis='index', inplace=True) #删除包含空缺值的整行数据
+        data_frame.dropna(axis='index', how='all') #删除整行都空缺的数据
+        data_frame.dropna(axis='index', how='any', subset=['name', 'age']) #删除指定列有空缺的行
+        data_frame.fillna(0, inplace=True) #修改空缺值
+        data_frame.fillna(data_frame.mean()) #平均值填充
         data_frame.fillna({'A':0,'B':1,'C':2},inplace=True) #每列空缺值用指定的值代替
 
+        #处理不同数据类型
+        data_frame['age'] = data_frame['age'].astype(float) #全部转换成float
+        data_frame['age'].unique() #返回所有出现的值
+
+        #基本运算(逐项运算)
+        score = data_frame.a + data_frame.b - data_frame.c #可以直接做向量运算
+        filt = data_frame > 0
+
+        #字符串操作(逐项操作)
+        df['school'] = df['school'].str.upper()
+        df['name'] = df['name'].str.split(' ') 
+        df[['first_name', 'last_name']] = df['name'].str.split(' ', expand=True)
+        df['name'].str.contains('Jack') #匹配字符串，返回一个True-False Series
+
         #常用的统计函数
+        data_frame.sort_index(inplace=True) #按index排序，NaN会被当成最大值
+        data_frame.sort_values(by='a', ascending=False, inplace=True) #排序，ascending为升序
+        data_frame.sort_values(by=['a', 'b'], ascending=[True, False]) #第一标准相同排第二标准，以此类推
+        #以下函数在运行时会忽略NaN
+        data_frame.nlargest(5, 'a') #取`a'最大的五行
+        data_frame.nlargest(5, columns=['a', 'b']) #取最大五项，第一标准为`a'，第二标准为`b'
+        data_frame.nsmallest(5, columns=['a', 'b']) #取最小五项，第一标准为`a'，第二标准为`b'
+        nums = df['a'].count() #统计非NaN的个数
+        nums = df['a'].value_counts() #统计values出现的频次，返回一个Series
+        nums = df['a'].value_counts(normalize=True) #统计values出现的频率
         average = data_frame.mean() #求每列的平均值，输出一个Series
-        score = data_frame.a+data_frame.b-data_frame.c #可以直接做向量运算
-        data_frame.sort_values(['a'],axis=0,ascending=False,inplace=True) #排序，ascending为升序
+        media = data_frame.median() #求每列的中位数
+        sum = data_frame.sum() #求每列的和
+        variance = data_frame.var() #样本方差
+        std = data_frame.std() #样本标准差
+        print(data_frame.describe()) #给出数据的所有常见统计参数
+
+        #分组
+        country_grp = df.groupby(['Country'])
+        print(country_grp.get_group('United States')) #查找一个group，返回一个DataFrame
+        country_grp['SocialMedia'].value_counts().head() #统计每一个group的SocialMedia，返回Series
+        country_grp['Salary'].agg(['median', 'mean']) #返回DataFrame，\texttt{columns=['median', 'mean']}
+        country_grp['Language'].apply(lambda x: x.str.contains('French').sum())#将函数作用于每个group
       \end{codeblock}
+
+    \subsubsection{处理datetime}
+      \begin{codeblock}[language=python, caption={datetime in pandas}]
+        d_range = pd.date_range('2024-01-01', period=6, freq='D') #区间生成日期Series
+        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d %I-%p') #string转datetime
+
+        df['Date'].dt.date() #对整行datetime进行操作
+        df['Date'].max(); df['Date'].min() #获取最早和最晚的时间
+        df.loc[df['Date'] >= pd.to_datetime('2020-5-20')]
+
+        df.set_index('Date', inplace=True) #下面将Date设置为index
+        df['2019'] #得到2019年的数据
+        df['2019-02':'2020-01'] #得到指定时间区间内的数据
+        df['temperature'].resample('2D').max() 
+            #将数据重采样为每两天的频率并求最大值，重采样方式参考\href{https://pandas.pydata.org/docs/user_guide/timeseries.html\#dateoffset-objects}{\underline{{date offset Series}}}
+        df.resample('W').agg({'temperature': 'max', 'rain': 'sum', 'air_quality': 'mean'}) 
+            #重采样时，对不同column执行不同的操作
+      \end{codeblock}
+

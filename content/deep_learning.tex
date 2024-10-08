@@ -1,0 +1,338 @@
+\section{deep learning}
+
+  \subsection{pytorch基本操作}
+    \subsubsection{数据操作}
+      \begin{codeblock}[language=python, caption={basic manipulation}]
+        import torch
+
+        x = torch.arange(12, dtype=torch.float32) #创建1至12的向量
+        x = torch.zeros((3, 4)) #零张量
+        x = torch.zeros_like(y) #创建同形状的零张量
+        x = torch.ones((3, 4)) #全为1的张量
+        x = torch.ones_like(y) #全为1的张量，形状同y
+        x_repeated = torch.repeat_interleave(input, repeats, dim=None)
+            #input为要进行重复的张量，repeats为重复次数(可以是整数或与input某维度长度相同的张量)
+            #dim指定在哪个维度上重复元素，若未指定，input会被展平
+        x_repeated = x.repeat(2, 1, 1) #在第0维重复2变，其它维不变
+        x = torch.randn(3, 5) #均值为0，标准差为1的高斯分布 
+        x = torch.tensor([[1, 3, 5, 6], [6, 9, 3, 5]]) #由list创建
+        x = torch(2.0) #创建一个标量
+
+        print(x.shape); print(x.numel()) #获取矩阵形状和总大小
+        print(len(x)) #获取向量的维度或矩阵列向量的维度
+        x = x.reshape(3, 4); x = x.reshape(3, 2, -1) #改变矩阵的形状，行优先
+        x = x.unsqueeze(0) #在第0维插入一个新的维度
+        x = x.permute((1, 0)) #将坐标轴顺序调换为(1, 0)
+        A = torch.cat(x, y, dim=0) #将两个列数相同的张量纵向拼接
+        B = torch.cat(x, y, dim=1) #将两个行数相同的张量横向拼接
+        A = torch.stack(x, y, dim=0) #将两个形状相同的矩阵堆叠，产生新维度dim0
+
+        print(x[2, 3]); x[2, 3] = 9 #通过行列索引访问和修改
+        y = x[torch.tensor([1, 3, 5])] #通过一个tensor作为index取值
+        y = x[[0, 1], [1, 0]] #取出(0, 1)和(1, 0)两个元素
+        x[0: 2, :] = 12 #将前两行全部改成12
+        x = x[None, :] #在axis=0处加入一个维度
+        x.fill_(10.0) #用10.0填充整个张量，可用于修改0-dim tensor
+
+        A = x.numpy(dtype=float); B = torch.tensor(A) #torch和numpy转换
+        A = x.detach().numpy() #detach可以丢掉当前计算图，不参与梯度计算
+        x.detach_() #原地操作丢掉当前计算图
+        A = torch.tensor(data_frame.to_numpy()); B = pd.DataFrame(A.numpy()) #torch和DataFrame转换
+        val = a.item(); val = float(a); val = int(a) #大小为1的张量转标量
+        x = x.type(y.dtype) #将x改为y的类型
+        x_long = x.long() #修改数据类型为long
+
+        print(x + y, x - y, x * y, x / y, x ** y) #同形状对应元素运算，不同形状会广播
+        print(x == y, x > y) #构建二元张量
+        x[:] = exp(x) #求对应元素的e指数，用切片表示法可以节省内存
+
+        x_sum = x.sum(); x_sum = x.sum(axis=[0, 1]) #求和，生成单元素张量
+        x_sum_axis0 = A.sum(axis=0) #沿轴0降维，逐列求和，这里axis参数的轴会在降维后消失
+        sum_x = x.sum(axis=1, keepdims=True) #沿轴1求和降维，但是轴数不变，可以广播
+        x_mean_axis0 = A.mean(axis=0) #沿轴0降维，逐列求均值
+        x_cumsum = torch.cumsum(x, dim=0) #计算张量在指定维度上的累积和，dim=0即沿行累加
+        x_max = x.max() #返回一个tensor，最大值
+        x_argmax = x.argmax() #返回一个tensor，最大值对应的index
+
+        sorted_tensor, indices = torch.sort(x, dim=1, descending=True)
+        #dim默认为-1，indices为排序后的张量中每个元素在原张量中dim维上的index
+      \end{codeblock}
+
+      注意，直接赋值不会重新分配内存
+      \begin{codeblock}[language=python, caption={equal and clone}]
+        a = torch.arange(10)
+        b = a; print(a is b, a == b) #返回True. True
+        b = a.clone(); print(a is b, a == b) #返回False, True
+      \end{codeblock}
+
+    \subsubsection{读写文件}
+      \begin{codeblock}[language=python, caption={File I/O}]
+        import torch
+        from torch import nn
+        from torch.nn import functional as F
+
+        x = torch.arange(4); y = torch.ones(3, 2)
+        torch.save([x, y], 'x-file') #写入文件
+        x2, y2 = torch.load('x-file') #读取文件
+
+        mydict = {'x': x, 'y': y} #以字典形式读写
+        torch.save(mydict, 'mydict')
+        mydict2 = torch.load('mydict')
+
+        net = Net() #nn.module的子类
+        torch.save(net.state_dict(), 'net.params')
+        clone = Net(); clone.load_state_dict(torch.load('net.params'))
+        clone.eval()
+      \end{codeblock}
+
+    \subsubsection{线性代数}
+      \begin{codeblock}[language=python, caption={linear algebra}]
+        A = A.T #矩阵转置
+        result = torch.dot(x, y) #求向量点积
+        y = torch.mv(A, x) #求矩阵-向量积
+        C = torch.mm(A, B) #求矩阵-矩阵积
+        C = torch.matmul(A, B) #矩阵乘法，可以处理多种输入形状，与\@ 基本相同
+        C = A @ B #矩阵乘法，在处理向量时会尝试将向量作为矩阵进行矩阵乘法，而matmul会返回内积
+        l2 = torch.norm(x) #求向量的$L_2$泛数
+        l1 = torch.abs(x).sum() #求向量的$L_1$泛数
+      \end{codeblock}
+
+    \subsubsection{微分}
+      \begin{codeblock}[language=python, caption={differentiation}]
+        x = torch.arange(4.0); x.requires_grad_(True) #注意这里必须是float向量而不是int向量
+        x = torch.arange(4.0, requires_grad=True) #两句等效，创建储存梯度的空间
+        y = 2 * torch.dot(x, x) #标量公式，不能是向量或张量，可以用sum()
+        y.backward() #调用反向传播函数
+        print(x.grad) #输出梯度向量
+        x.grad.zero_() #在默认情况下，PyTorch会累加梯度，我们需要清除之前的值
+        with torch.no_grad(): #在这个上下文中所有的操作不会计算梯度
+
+        y = x * x; u = y.detach() #求微分时将y是为一个常数，丢弃计算图中y的信息
+        z = u * x; z.sum().backward()
+        print(x.grad) #x.grad == u，全部为True
+        x.grad.zero_()
+      \end{codeblock}
+
+    \subsubsection{概率}
+      \begin{codeblock}[language=python, caption={Probability and Statistics}]
+        import torch
+        from torch.distributions import multinomial
+        from d2l import torch as d2l
+        
+        fair_probs = torch.ones([6]) / 6 #概率向量
+        sample_vec = multinomial.Multinomial(10, fair_probs).sample((500,)) 
+            #进行500次测试，每次取10个样本，得到五行六列的矩阵
+
+        print(dir(torch.distributions)) #查看所有的函数和类
+
+        X = torch.normal(0, 1, (3, 5)) #生成正态分布数据，期望为0，标准差为1，3行5列
+        X = torch.normal(0, 1, A.shape) 
+      \end{codeblock}
+
+  \subsection{线性神经网络}
+    \subsubsection{线性回归}
+      \begin{codeblock}[language=python, caption=]
+        import torch
+        from d2l import torch as d2l
+        from torch import nn #neural network
+
+        true_w = torch.tensor([2, -3.4])
+        true_b = 4.2
+        features, labels = d2l.synthetic_data(true_w, true_b, 1000) #初始数据集
+
+        batch_size = 10
+        data_iter = d2l.load_array((features, labels), batch_size) #将初始数据转换成迭代器
+
+        net = nn.Sequential(nn.Linear(2, 1)) #权重矩阵的形状
+        net[0].weight.data.normal_(0, 0.01) #初始化权重，更多初始化方法参考\href{https://pytorch.org/docs/stable/nn.init.html}{\underline{\texttt{torch.nn.init}}}
+        nn.init.normal_(net[0].weight, mean=0, std=0.01) #这两句效果相同
+        net[0].bias.data.fill_(0) #初始化偏置
+        net = nn.Sequential(nn.LazyLinear(256), nn.ReLU(), nn.LazyLinear(10)) 
+            #延迟初始化，只给定层的输出维数，在给定输入后根据输入的维数确定权重的shape并初始化
+
+        loss = nn.MSELoss() #定义损失函数为$L_2$范数，更多损失函数参考\href{https://pytorch.org/docs/stable/nn.html#loss-functions}{\underline{\texttt{torch.nn loss-functions}}}
+            #nn中的损失函数由reduction选项，可选'mean', 'none', 'sum'表示对损失值进行预操作，默认'mean'
+            #注意MSELoss计算平方误差时不带系数1/2
+        trainer = torch.optim.SGD(net.parameters(), lr=0.03) #设置优化算法为随机梯度下降
+
+        num_epochs = 3 #迭代次数
+        for epoch in range(num_epochs): #迭代训练
+            for X, y in data_iter:
+                l = loss(net(X), y)
+                trainer.zero_grad()
+                l.backward()
+                trainer.step()
+            l = loss(net(features), labels)
+
+        w = net[0].weight.data #获取权重和偏置数据数据
+        b = net[0].bias.data
+        print(net[0].weight.grad) #获取梯度数据
+        print(net[0].state_dict()) #获取一层的所有数据
+        iter_para = net.parameters() #获取一个迭代器，包含所有的参数tensor
+        iter_name_para = net.name_parameters() #获取迭代一，所有的(name, parameter)对
+        print(net.eval()) #输出所有层的树，可视化
+      \end{codeblock}
+
+    \subsubsection{softmax回归}
+      由于计算精度的影响softmax函数会出现上溢或者下溢的情况，解决这个问题的技巧是:
+      \begin{itemize}
+        \item 在计算softmax之前，先从所有$o_k$中减去$\max(o_k)$以解决上溢
+        \item 将计算softmax和交叉熵结合在一起，保留softmax作为输出，并传递取对数的结果
+              \[ \log(\hat{y}_j) = \log(\frac{\exp(o_j-\max{(o_k)})}{\sum_{k}\exp(o_k-\max{(o_k)})}) = o_j-\max(o_k)-\log(\sum_k\exp(o_k-\max(o_k))) \]
+      \end{itemize}
+
+      Pytorch的CrossEntropyLoss可以接受网络的未归一化输出$\mathbf{o}$，并在其内部进行上述操作，输出softmax的结果和交叉熵损失。
+
+      \begin{codeblock}[language=python, caption={Softmax}]
+        import torch
+        from torch import nn
+        from d2l import torch as d2l
+        
+        train_iter, test_iter = d2l.load_data_fashion_mnist(256) #加载Fashion-MNIST图片集
+        
+        net = nn.Sequential(nn.Flatten(), nn.Linear(784, 10)) #创建权重变量
+        
+        def init_weights(m):
+            if type(m) == nn.Linear:
+                nn.init.normal_(m.weight, std=0.01)
+        
+        net.apply(init_weights) #初始化权重
+        
+        loss = nn.CrossEntropyLoss(reduction='none')
+        trainer = torch.optim.SGD(net.parameters(), lr=0.1)
+        num_epochs = 10
+        d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)
+        d2l.plt.show()
+      \end{codeblock}
+
+    \subsubsection{多层向量机}
+      \begin{codeblock}[language=python, caption={activation function}]
+        import torch
+        from d2l import torch as d2l
+
+        x = torch.arange(-8.0, 8.0, 0.1, requires_grad=True)
+        y = torch.relu(x) #ReLU函数，仅保留正值
+        y = torch.sigmoid(x) #sigmoid压缩函数
+        y = torch.tanh(x) #双曲正切函数也能将实数域压缩到(0, 1)
+      \end{codeblock}
+
+      \begin{codeblock}[language=python, caption={Multilayer}]
+        import torch
+        from torch import nn
+        from d2l import torch as d2l
+
+        net = nn.Sequential(nn.Flatten(), #将矩阵展平成向量
+                            nn.Linear(784, 256), #可选bias=False，不带偏置
+                            nn.ReLU(),
+                            nn.Dropout(0.2), #标准暂退法正则化
+                            nn.Linear(256, 10))
+
+        def init_weights(m):
+            if type(m) == nn.Linear:
+                nn.init.normal_(m.weight, std=0.01)
+
+        net.apply(init_weights);
+
+        batch_size, lr, num_epochs = 256, 0.1, 10
+        loss = nn.CrossEntropyLoss(reduction='none')
+        trainer = torch.optim.SGD(net.parameters(), lr=lr)
+        #parameters表示模型中的所有计算梯度的参数
+        #这里可以设置$L_2$范数惩罚
+        trainer = torch.optim.SGD(
+            [{"params":net[0].weight, 'weight_decay':wd}, #给weight张量加上$L_2$范数惩罚
+             {"params":net[0].bias}], #net是一个OrderedDict，每个元素代表一层
+            lr = lr
+        ])
+
+        train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
+        d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)
+        d2l.plt.show()
+      \end{codeblock}
+
+  \subsection{获取数据集}
+    \subsubsection{线性回归数据集}
+      \begin{codeblock}[language=python, caption={Get linear data}]
+        def synthetic_data(w, b, num_examples):  #@save
+            """生成y=Xw+b+噪声"""
+            X = torch.normal(0, 1, (num_examples, len(w)))
+            y = torch.matmul(X, w) + b
+            y += torch.normal(0, 0.01, y.shape)
+            return X, y.reshape((-1, 1))
+
+        def data_iter(batch_size, features, labels): #加载迭代器
+            num_examples = len(features)
+            indices = list(range(num_examples))
+            # 这些样本是随机读取的，没有特定的顺序
+            random.shuffle(indices)
+            for i in range(0, num_examples, batch_size):
+                batch_indices = torch.tensor(
+                    indices[i: min(i + batch_size, num_examples)])
+                yield features[batch_indices], labels[batch_indices]
+      \end{codeblock}
+
+    \subsubsection{Fashion-MNIST图像分类数据集}
+      Fashion-MNIST有10个类别，每个类别6000张图片的训练数据集和1000张图片的测试数据集。
+      \begin{codeblock}[language = python, caption={Download Fashion-MNIST}]
+        import torch
+        import torchvision
+        from torch.utils import data
+        from torchvision import transforms
+        from d2l import torch as d2l
+
+        d2l.use_svg_display()
+
+        def get_DataLoader_mnist():
+            return 4
+
+        def load_data_fashion_mnist(batch_size, resize=None):
+            trans = [transforms.ToTensor()] #将图像由PIL类型转换为32位浮点数，并除以255归一
+            if resize: #调整图像大小以保证大小统一
+                trans.insert(0, transforms.Resize(resize))
+            trans = transforms.Compose(trans)
+            mnist_train = torchvision.datasets.FashionMNIST(
+                root='../data', train=True, transform=trans, download=True
+            )
+            mnist_test = torchvision.datasets.FashionMNIST(
+                root='../data', train=False, transform=trans, download=True
+            )
+            return (
+                data.DataLoader(mnist_train, batch_size, shuffle=True, 
+                                num_workers=get_dataloader_worker()),
+                data.DataLoader(mnist_train, batch_size, shuffle=False, 
+                                num_workers=get_dataloader_worker())
+            ) #采用4个进程来读取数据
+      \end{codeblock}
+
+    \subsubsection{数据加载切分}
+      \begin{itemize}
+        \item torch.utils.data可以用于切分数据。
+        \item torch.utils.data.DataLoader接收数据集(需要有\_\_len\_\_和\_\_getitem\_\_)，并返回一个iterator
+        \item torch.utils.data.Dataset是一个基类，数据集类可以是他的子类(当然也可以是list，torch.tensor等)
+      \end{itemize}
+      \begin{codeblock}[language=python, caption={DataLoader}]
+        import torch
+        import torch.utils.data
+
+        # 自定义数据集
+        class CustomDataset(torch.utils.data.Dataset):
+            def __init__(self, data, labels):
+                self.data = data
+                self.labels = labels
+
+            def __len__(self):
+                return len(self.data)
+
+            def __getitem__(self, index):
+                # 返回指定索引的数据和标签
+                return self.data[index], self.labels[index]
+
+        # 创建数据和标签
+        data = torch.randn(100, 3)  # 100 个样本，每个样本 3 个特征
+        labels = torch.randint(0, 2, (100,))  # 100 个标签
+
+        # 创建自定义数据集对象
+        dataset = CustomDataset(data, labels)
+
+        # 使用 DataLoader 加载自定义数据集
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=10, shuffle=True)
+      \end{codeblock}

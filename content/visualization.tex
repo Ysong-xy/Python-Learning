@@ -1,26 +1,43 @@
-\section{visualizations}
+\section{visualization}
 
   \subsection{matplotlib}
     \subsubsection{画布预处理}
       \begin{codeblock}[language=python, caption={basic setup of plt}]
         from matplotlib import pyplot as plt
-        import numpy as np
 
         plt.figure(figsize=(10,20),facecolor,edgecolor)
-        plt.title("title")
-        plt.xlabel("x");plt.ylabel("y")
-        plt.style.use("seaborn-v0_8")
-        plt.legend() #显示图例
-        plt.xticks(ticks=[2*i+1 for i in range(10)],labels=[2*i+1 for i in range(10)])
-        plt.xlim(2,22)
+        plt.title("This is my title")
+        plt.xlabel("x"); plt.ylabel("y")
+        plt.xlim(2,22) #设置x的范围
+        plt.xscale('log') #设置x为对数轴
+        plt.xticks(ticks=[2*i+1 for i in range(10)], 
+                   labels=[2*i+1 for i in range(10)]) #设置坐标轴位置和标签
+        plt.legend(["line1", "line2"], loc="upper left") #显示图例，以加入图表的顺序为序
+        plt.legend(loc=(0.03, 0.05)) #显示图例，利用图表绘制时的label，直接以横纵坐标设定位置
+        plt.rcParams['font.sans-serif'] = ['SimHei'] #字体设置(默认字体不支持中文)
+        plt.rcParams['axes.unicode_minus'] = False #正常显示负号
+
+        plt.style.use("seaborn-v0_8") #利用预设样式
+        plt.xkcd() #手绘样式
+        plt.tight_layout() #布局更紧凑，可以避免label和ticks显示在画布范围外的问题
+
+        plt.grid(True) #开启网格线
         plt.grid(axis=both, #axis=x or y or False
                 linestyle="dashed", #or dotted or dashdot
                 color="#FFFFFF"
         ) #添加网格线
-        plt.axhline(5,color,linestyle,linewidth) #水平参考线
-        plt.axvline(10,color,linestyle,linewidth) #垂直参考线
-        plt.axhspan(5,7,color,linestyle,linewidth) #水平参考区域
-        plt.axvspan(10,12,color,linestyle,linewidth) #垂直参考区域
+        plt.axhline(5, #水平参考线
+                    xmin=0.1, xmax=0.9, #\lbrack0, 1\rbrack 范围内i昂对于x轴的归一化范围
+                    color="red", linestyle="--", linewidth=0.5 #参考线样式
+        ) 
+        plt.axvline(10) #垂直参考线
+        plt.axhspan(5, 7, #水平参考区域
+                    xmin=0.1, xmax=0.9, #\lbrack0, 1\rbrack 范围内i昂对于x轴的归一化范围
+                    color="red", alpha=0.5, #填充样式，color会同时作用于facecolor和edgecolor
+                    linestyle="--", linewidth=0.5 #区域边沿线样式
+        ) 
+        plt.axvspan(10, 12) #垂直参考区域
+
         plt.annotate(text,xy=(5,10), #待注释点坐标
                     xytext=(7,12), #注释文本位置
                     color="#FFFFFF",fontsize=16,
@@ -30,56 +47,208 @@
                                 "color":"#FFFFFF"}
         ) #显示注释点
         plt.text(7,12,text) #显示无箭头注释
+
+        plt.savefig('plot.png') #保存图片
+        plt.show() #显示图片，注意没有这句不会显示
       \end{codeblock}
 
-    \subsubsection{基本图表}  
-      \begin{codeblock}[language=python, caption={plots of plt}]
-        plt.plot(x,y,color="red",
+    \subsubsection{子图表}
+      figure是一整张图片，plot是其中的图。一个figure可以有多个plot。
+      \begin{codeblock}[language=python, caption={subplot}]
+        ax = plt.gca() #返回当前坐标轴
+        fig = plt.gcf() #返回当前figure
+
+        fig, ax = plt.subplots( #创建figure和其中的subplot，ax fig是list
+            nrows=2, ncols=1,
+            sharex=True, #共用x轴(xticks只保留一个，xlabel不会共用)
+        ) 
+
+        ax[0].plot(x, y)
+        ax[1].plot(x, y1)
+        ax[0].legend()
+
+        ax[0].set_title("Title of plot")
+        ax[0].set_xlabel("x")
+        ax[0].set_ylabel("y")
+
+        plt.tight_layout()
+        plt.show()
+        fig.savefig('test.jpg')
+      \end{codeblock}
+
+    \subsubsection{数据获取}
+      \begin{codeblock}[language=python, caption={fetch data}]
+        import numpy as np
+        import csv
+
+        x = np.arange(5)
+        y = np.array([3, 7, 8, 9, 13])
+        y2 = np.array([2, 4, 7, 11, 16])
+
+        with open('data.csv') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            x = csv_reader.fieldnames
+            y = [float(i) for i in next(csv_reader).value()]
+            y1 = [float(i) for i in next(csv_reader).value()]
+      \end{codeblock}
+
+    \subsubsection{折线图}  
+      \begin{codeblock}[language=python, caption={\href{https://matplotlib.org/stable/api/\_as\_gen/matplotlib.axes.Axes.plot.html\#matplotlib.axes.Axes.plot}
+                                                       {\underline{line plot}}}]
+        plt.plot(x, y, 'k--') #黑色虚线，第三个变量是format strings样式，见文档Notes part
+        plt.plot(x, y,
+                color="#5a7d9a",
+                label="Line1",
                 linestyle="dashed", #or dotted or dashdot
+                    #也可以设置为-- -. - : None '' ' '
                 linewidth=3,
                 marker=".", #or "," "o" "+" "x"
                 markersize=8,
                 markerfacecolor="blue",
-                markeredgecolor="cyan"
+                markeredgecolor="cyan",
+                markeredgewidth=2
         )
-        plt.bar(x,y,width,bottom=3, #柱形底部高度
+        #面积图，y轴是各组y数据的和
+        plt.stackplot(x, y1, y2, y3,
+                      color=["red","yellow","blue"],
+                      labels=["player1", "player2", "player3"]
+        ) 
+        plt.fill_between(x, y, alpha=0.25) #填充x-y下方的区域
+        plt.fill_between(x, y, 30, #填充x-y和y=30之间的区域
+                         where=(y > 30), #仅填充y>30的部分
+                         interpolate=True,
+        )
+        plt.fill_between(x, y, y1) #填充两条曲线之间的部分
+      \end{codeblock}
+
+    \subsubsection{柱状图}
+      \begin{codeblock}[language=python, caption={bar chart}]
+        plt.bar(x, y,
+                width=0.8, #柱形宽度
+                bottom=1, #柱形底部高度，可以是和x一样长的列表，用于bar的堆叠
                 hatch="/") #or "l" "\" "\textbackslash\textbackslash" "//"
-        plt.barh(x,y)
-        plt.hist(x,bins) #直方图，bins可以是整数（条数）或列表
-        plt.scatter(x,y,s) #s is a list, which stands for the size of the dots
-        plt.pie(x,colors=["red","blue","yellow"],
-                autopct=%1.1f%%, #整数部分一位，小数部分一位
-                explode=[0,0.5,0], #将第二块拉出0.5
-                shadow=True,labels=["一月","二月","三月"],
-        ) #饼图
-        plt.pie(x,colors=["red","blue","yellow"],
-                autopct=%1.1f%%, #整数部分一位，小数部分一位
-                explode=[0,0.5,0], #将第二块拉出0.5
-                shadow=True,labels=["一月","二月","三月"],
-                radius=1.0,wedgeprops={"width":0.6} #内外圆半径
-        ) #圆环图
-        plt.boxplot(x,showmeans=True, #显示均值
-                    flierprops={"marker":"o", #or "," "+" "x"
-                                "markerfacecolor":"red",
-                                "markeredgecolor":"black",
-                                "markersize":8
-                    }, #异常点样式
-                    patch_artist=True, #自定义箱型
-                    boxprops={"facecolor":"red",
-                              "edgecolor":"yellow"
-                    } #箱型样式
-        ) #箱型图
-        plt.stackplot(x,y1,y2,y3,color=["red","yellow","blue"]) 
-        #面积图(可堆叠)
-        plt.errorbar(x,y,yerr=[lower_errors,upper_errors],
-                    ecolor=blue, #color of the errorbars
-                    elinewidth=3, #width of the errorbars
-                    capsize=2 #横杠大小
+        plt.bar(['Jack', 'Ron', 'Jane'], [93, 98, 96]) #这里x轴可以不是数
+        plt.barh(x,y) #横向柱状图，适用于bar较多的情况
+
+        width = 0.25 #这是并列柱状图的画法
+        plt.bar(x-width/2, y, width=width, color="#008fd5", label="y")
+        plt.bar(x+width/2, y1, width=width, color="#e5ae38", label="y1")
+        #直方图
+        plt.hist(x, bins=5, #直方图，bins可以是整数(分组数量)或列表
+                 edgecolor="black"
+        ) 
+        plt.hist(x, bins=[10, 20, 30, 40]) #列表设定各bins的边界
+        plt.hist(x, bins=5,
+                 log=True #y轴以10的幂次表示，用于数据差距比较大的情况
         )
+      \end{codeblock}
+
+    \subsubsection{饼图}
+      \begin{codeblock}[language=python, caption={pie chart}]
+        #普通饼图
+        plt.pie(x, #不用换算成百分数，原数据即可
+                labels=["一月","二月","三月"],
+                colors=["red","blue","yellow"],
+                wedgeprops={"edgecolor":"red"} #各区域之间的分割线
+                autopct="%0.1f%%", #一位小数百分比，\%d\%\%整数百分比，\%0.1f一位小数，\%0.2f\%\%两位小数百分比
+                explode=[0,0.1,0], #将第二块拉出0.5
+                shadow=True, #加上阴影
+                startangle=90, #开始方向，默认为右侧(0)，逆时针为正方向
+        ) 
+        #圆环图
+        plt.pie(x,colors=["red","blue","yellow"],
+                shadow=True,labels=["一月","二月","三月"],
+                wedgeprops={"width":0.6} #内圆半径，外圆半径为1
+        ) 
+      \end{codeblock}
+
+    \subsubsection{散点图}
+      \begin{codeblock}[language=python, caption={scatter plot}]
+        plt.scatter(x, y, s=100, #散点图，s表示点的大小，可以是和x一样长的list
+                    color="red", alpha=0.5, #填充样式
+                    marker="0", #or "," "+" "x" "\^{}"
+                    edgecolor="black", linewidth=2, linestyle="-.", #边缘线样式
+        ) 
+        plt.scatter(x, y, [i*50+100 for i in range(len(x))]) #气泡图
+
+        plt.scatter(x, y, c=[7, 5, 9, 2, 3], cmap='Greens') #通过cmap设置颜色
+        cbar = plt.colorbar(label='heat') #显示colorbar及其注释
+        #可以通过print(plt.colormaps)查看所有的可选cmap
+        #误差棒图
+        plt.errorbar(x, y, #散点数组
+                    yerr=[[0.1, 0.3, 0.2], [0.4, 0.1, 0.1]], #上置信度和置信度
+                    xerr=[0.05, 0.04, 0.07], #上下置信度
+                    fmt="o--", #散点样式和连线样式
+                    color="red", #color of scatters
+                    ecolor="blue", #color of the errorbars
+                    elinewidth=3, #误差棒粗细
+                    capsize=2, #误差棒横杠大小
+                    capthick=2, #误差棒边界横杠厚度
+                    uplims=False, #显示误差上界，False显示，True隐藏
+                    lolims=[True, False, False], #只显示指定的下界
+        ) #其余选项和plot,scatter类似
+      \end{codeblock}
+
+    \subsubsection{箱型图}
+      \begin{codeblock}[language=python, caption={box plot}]
+        #箱型图
+        plt.boxplot(x, #x是一个数组
+                    showmeans=True, #显示均值
+                    patch=True, #显示缺口箱图，默认矩形箱图
+                    vert=False, #False为横向，True为纵向
+                    showfliers=True, #显示离群点，默认显示
+                    whis=1.5, #箱须延长的百分比范围
+                    width=1, #箱体总宽度
+                    flierprops={ #离群点样式
+                        "marker":"o", #or "," "+" "x"
+                        "markerfacecolor":"red",
+                        "markeredgecolor":"black",
+                        "markersize":8
+                    }, 
+                    patch_artist=True, #自定义箱型
+                    boxprops={ #箱型样式
+                        "facecolor":"red",
+                        "edgecolor":"yellow",
+                        "linewidth":4
+                    },
+        ) 
+        #绘制多个箱型
+        plt.boxplot((x, y), #适用于x轴没有数值含义的时候
+                    tick_labels=['x', 'y'], #均匀分布
+        )
+        plt.boxplot((x, y), #适用于x轴有数值
+                    positions=(1, 2), 
+                    manage_ticks-True #刻度会根据positions自动调整
+        )
+      \end{codeblock}
+
+    \subsubsection{热力图}
+      \begin{codeblock}[language=python, caption={heat map}]
+        #绘制热力图
         plt.imshow(x, #x是个二维列表
                   cmap=plt.cm.cool #设置颜色
-        ) #绘制热力图
-        plt.colorbar() #显示图例
+        ) 
+        plt.colorbar(label="label") #显示图例
+      \end{codeblock}
+    
+    \subsubsection{时间图像}
+      \begin{codeblock}[language=python, caption={Plotting Time Series Data}]
+        import pandas as pd
+        from datetime import datetime, timedelta
+        from matplotlib import pyplot as plt
+        from matplotlib import dates as mpl_dates
+
+        #获取时间
+        dates = pd.Series([datetime(2024, 6, 30), datetime(2024, 7, 5), datetime(2024, 7, 11)])
+        dates = pd.Series(["2024-6-30", "2024-7-5", "2024-7-11"])
+        dates = pd.to_datetime(dates).sort_values() #注意需要排序
+        y = [4, 6, 7]
+
+        plt.plot(dates, y)
+        plt.gcf().autofmt_xdate() #将日期斜方向写，gcf表示当前图像
+
+        date_format = mpl_dates.DateFormatter('%b, %d %Y')
+        plt.gca().xaxis.set_major_formatter(date_format) #设置日期格式
       \end{codeblock}
 
     \subsubsection{极坐标图表}
@@ -107,6 +276,25 @@
         ax1.plot_surface(X,Y,Z,rstride=0.1,cstride=0.1) #步长越短越清晰
         ax1.contour(X,Y,Z,zdir='x',offset=-3,cmap="cold") #绘制等高线，投影在x=3平面上
         ax1.bar3d(X,Y,height,width,depth,Z,color="red",shade=True) #绘制柱状图,height为柱底高度
+      \end{codeblock}
+
+    \subsubsection{动态实时图像}
+      \begin{codeblock}[language=python, caption={plotting live date}]
+        from matplotlib.animation import FuncAnimation
+        import itertools, random
+
+        x_vals, y_vals, index = [], [], itertools.count()
+        def animate(i):
+            x_vals.append(next(index))
+            y_vals.append(random.randint(0, 5))
+            plt.cla() #先清除上一帧图像
+            plt.plot(x_vals, y_vals)
+            plt.tight_layout()
+
+        ani = FuncAnimation(plt.gcf(), animate, interval=1000)
+
+        plt.tight_layout()
+        plt.show()
       \end{codeblock}
 
   \subsection{wordcloud}

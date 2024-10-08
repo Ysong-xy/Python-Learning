@@ -1,0 +1,378 @@
+\section{Collections}
+
+  \subsection{iterator}
+    iterator和generator(带yield的函数)有些类似，区别在于内存的使用，iterator会生成所有的值并存在内存里，
+    generator则按需生成值，节省内存。例如，当需要读取一个大文件中的前几行时，iterator可以避免吧整个文件都
+    读取进来。
+    \begin{codeblock}[language=python, caption={iterator}]
+      i_nums = iter([1, 2, 3, 4, 5]) #从iterable生成iterator
+      ite = map(lambda x: x * x, range(10), [i for i in range(20)])
+      ite = map(pow, range(10), itertools.repeat(2))
+      ite = filter(lambda x: x % 2 == false, range(10))
+      #这两个函数里第二个及更后面的参数可以是iterator,range,tuple,list,string等可以迭代的内容
+      #map会对遍历过程中的每个元素进行function操作，filter只会留下condition为True的元素
+      ite = zip('abcd', range(4), [i*i for i in range(4)])
+      #zip返回的迭代器是各可循环容器的元素组成的元组，遍历直到有容器被遍历完
+      ite = zip_longest('abcd', range(4), [i*i for i in range(4)])
+      #这里会一直遍历到所有iterable都遍历完，用None补充没有的部分
+      print(next(result)); print(next(result)) #逐项查找
+      for value in ite:
+        print(value) #遍历迭代器
+      #注意，迭代器在遍历后会变为空，这一点与list,range,tuple不同。
+      #迭代器转为list等其他变量类型时会将其遍历一遍，因此同样会变空。
+    \end{codeblock}
+
+    \subsubsection{itertools}
+      itertools可以处理iterator。
+      \begin{codeblock}[language=python, caption={itertools}]
+        counter = itertools.count(5) #返回一个从5到无穷的iterator
+        counter = itertools.cycle([1, 2, 3]) #返回列表循环的iterator
+        counter = itertools.repeat(2, times=3) #返回2重复3次的iterator，times默认无穷
+        counter = itertools.starmap(pow, [(0, 2), (1, 2), (2, 2)]) #与map类似
+        counter = itertools.combinations("abcd", 2) #两两无序组合为tuple，组成iterator
+        counter = itertools.permutations("abcd", 2) #两两有序组合为tuple，组成iterator
+        counter = itertools.combinations_with_replacement("abcd", 4) #允许tuple中元素重复
+        counter = itertools.permutations_with_replacement("abcd", 4) #允许tuple中元素重复
+        combined = itertools.chain("abcd", [1, 2, 3]) #拼接iterables，类似zip
+        result = itertools.islice(range(10), 1, 5, 2) #从index=1迭代到index=4, step=2
+        result = itertools.compress("abcd", [True, True, False, True]) #abd组成的iterator
+        result = itertools.filterfalse(lambda x: x%2 == 0, range(10)) #判断与filter相反
+
+        students = [
+          {
+            "name": "Jack",
+            "city": "Shanghai",
+            "group": 1,
+          },
+          {
+            "name": "Amy",
+            "city": "Beijing",
+            "group": 2,
+          },
+          {
+            "name": "Jerry",
+            "city": "Hangzhou",
+            "group": 1,
+          },
+          {
+            "name": "Jane",
+            "city": "Wuhan",
+            "group": 2,
+          }
+        ]
+        students.sort(key=lambda x: x["group"])
+        student_group = itertools.groupby(students, lambda x: x["group"])
+        for key, group in student_group: #这是一个二级iterator
+            print(key) #group名，即list中group的值
+            for person in group:
+              print(person)
+      \end{codeblock}
+
+  \subsection{list}
+    \begin{codeblock}[language=python, caption={basic operations of list}]
+      #创建列表
+      empty_list = []; empty_list = list()
+      student1=["Hermione","Harry","Ron"]
+      student2=["Draco","Padma"]
+      student_score=list(range(10)) #[range(10)]会创建一个只有range(10)一个元素的列表
+      student_score=[(letter, num) for letter in 'abcd' for num in range(4)]
+      score = [(letter, num) for letter, num in zip('abcd', range(4))] #注意这两个是不同的
+      student_score = list(map(lambda n: n*n, range(10)))
+      #对列表元素进行操作
+      student="Potter"
+      student1.append(student) #在列表的末尾追加
+      student1.insert(2, student) #在指定index处插入
+      student2.extend(student1) #列表的拼接，这样可以比+更快
+      del student[-1] #删除最后一个元素
+      student_popped=student1.pop(1) #删除指定index处的元素，默认删除最后一个
+      student_popped=student1.remove('Padma') #寻找第一个指定元素并删除，找不到会报错
+      student_reversed=student1.reverse() #反转元素顺序
+      seq_Ron=student.index("Ron") #查找第一个匹配的元素并输出，找不到会报错
+      #列表拼接、扩展、排序、遍历
+      student1=student1+student2
+      student3=sorted(student1); student1.sort() #sorted是一个function，sort是一个method
+      student3=sorted(student1, key=str.lower(), reverse=True) #不区分大小写倒序排序
+      #sorted函数会对每个元素进行key的操作，按照返回值的顺序，对原数据进行排序
+      student1.sort(reverse=True) #True stands for down
+      if "Hermione" in student1:
+        print("Hermione is in student1")
+      for a in student1: #遍历列表
+      for index, item in enumerate(student1):
+      for index, student in enumerate(student1, start=1): #这里index可以从1开始编号
+      students = ', '.join(student1) #将list中的元素合并成一个字符串，以逗号为分隔符
+      #列表统计
+      number=student1.count("Padma") #统计元素出现的数量
+      ind=student2.index("Padma") #找到元素首次出现的位置
+      min_one, max_one = min(student_score), max(student_score)
+      total=sum(student_score) #列表求和
+    \end{codeblock}
+
+  \subsection{tuple}
+    元组是不可变的序列，但可以重新赋值
+    \begin{codeblock}[language=python, caption={basic operation of tuple}]
+      #元组创建
+      empty_tuple = (); empty_tuple = tuple() #创建空元组
+      a=tuple(rage(10,20,3)); a=(); a=(1,2,3)
+      a_tup = sorted(a) #tuple没有sort method
+    \end{codeblock}
+
+  \subsection{set}
+    Python的set是无序集合，这与C++不同。
+    \begin{codeblock}[language=python, caption={basic operation of set}]
+      students=[
+        {"name":"Hermione","house":"Gryffindor"},
+        {"name":"Harry","house":"Gryffindor"},
+        {"name":"Ron","house":"Gryffindor"},
+        {"name":"Draco","house":"Slytherin"},
+        {"name":"Padma","house":"Ravenclaw"},
+      ]
+      houses=set() #创建空集合，注意houses={}会创建一个字典
+      houses.pop() #删除第一个元素，注意顺序是随机的
+      houses.clear() #清空集合
+      for student in students:
+        houses.add(student["house"])
+      for house in sorted(houses):
+        print(house)
+      if "Slytherin" in houses:
+        print("Slytherin is in houses.")
+    \end{codeblock}
+
+  \subsection{dict}
+    \begin{codeblock}[language=python, caption={basic operation of dictionary}]
+      #创建字典
+      students1={
+        "Harry":"Gryffindor",
+        "Ron":"Gryffindor",
+        "Draco":"Slytherin",
+        "Padma":"Ravenclaw",
+      }
+      name=["Harry","Ron","Draco","Padma"]
+      house=["Gryffindor","Gryffindor","Slytherin","Ravenclaw"]
+      student1=dict(zip(name,sign)) 
+      student1=dict(n: s for n, s in zip(name,sign))
+      student1=dict((("Harry","Gryffindor"),("Ron","Gryffindor"),
+          ("Draco","Slytherin"),("Padma","Ravenclaw"))) #这三句的效果相同
+      student1=dict(Harry="Gryffindor",Ron="Gryffindor",Draco="Slytherin",Padma="Ravenclaw")
+      student_empty=dict.fromkeys(name) #创建值为空的字典
+
+      #访问，排序，删除，加入，遍历
+      ron_house=student1["Ron"] #访问字典，找不到会报错
+      ron_house=student1.get("Ron") #访问字典，找不到会返回None，可以通过这种方法避免报错
+      david_house=student1.get("David", "Not Found") #访问字典，找不到返回Not Found
+      student1["Hermione"]="Gryffindor" #加入元素
+      student1.update({"Hermione":"Gryffindor"}) #合并两字典
+
+      s_house = sorted(student1) #根据key来排序
+      ron_house=student1.pop("Ron") #删除元素并返回值
+      del student1["Ron"] #删除元素
+
+      for key,value in student1.items() #遍历字典，注意item是函数，要加()
+      for key in student1.keys(); for key in student1 #遍历键数组
+      for value in student1.values() #遍历值数组
+    \end{codeblock}
+
+  \subsection{String}
+    \subsubsection{编码解码}
+      \begin{codeblock}[language=python, caption={create a string}]
+        raw_string = r'\tTab' #这里的\textbackslash t不会被替换
+        name="Harry"; text='Hello world!'
+        byte=name.encode('GBK') #编码,返回编码的16进制值
+        name1=byte.decode('GBK') #解码
+      \end{codeblock}
+
+    \subsubsection{常用操作}
+      \begin{codeblock}[language=python, caption={basic operations of string}]
+        length=len(name) #返回字符串长度
+        size=len(name.encode()) #返回内存大小
+        text.split(' ') #切分字符串
+        strnew=string.join(house) #合并字符串
+        sub='ab'
+        str_replace=sub.replace('a', 'c') #字符串替换
+        num=string.count(sub) #检索子字符串出现次数
+        start=string.find(sub) #子字符串首次出现的索引，若没有出现，返回-1
+        str_lower=str.lower() #转为小写,不会改变原字符串
+        str_upper=str.upper() #转为大写
+        str_strip=str.strip(['@']) #删去字符串左右两侧的' ',\textbackslash t,\textbackslash r,\textbackslash n等(默认),以及'@'(可选)
+        str_lstrip=str.lstrip(['@']) #删去字符串左侧的特定字符
+        str_rstrip=str.rstrip(['@']) #删去字符串右侧的特定字符
+        str_filled = str.ljust(10, fillchar=' ') #字符串左对齐，右侧填充至10个字符
+        str_filled = str.rjust(10, fillchar=' ') #字符串右对齐
+        str_filled = str.center(10, fillchar='*') #字符串中间对齐
+      \end{codeblock}
+
+    \subsubsection{格式化字符串}
+      格式化字符串也就是先制定一个模板，并在模板中以占位符为变量留下位置。一种实现方式是与C语言相似的占位符，
+      更适合python的做法是使用format函数或者f字符串。
+      \begin{codeblock}[language=python, caption={formatting string1}]
+        '%[-][+][0][m][.n]格式字符'%exp #这是模板
+        template = '编号：%09d\t 公司名称: %s\t官网: http://www.%s.com'
+        print(template%(7, '百度', 'baidu'))
+      \end{codeblock}
+
+      可选项如下
+      \begin{itemize}
+        \item -:左对齐，正数前面无负号，负数前面有负号
+        \item +:右对齐，正数前面加正号，负数前面加负号
+        \item 0:右对齐，正数前面无负号，负数前面加负号，用0补足位数
+        \item m:占有宽度
+        \item .n:小数位数
+      \end{itemize}
+
+      \begin{table}[H]
+        \centering
+        \caption{placeholder}
+        \label{tab:placeholder}
+        \begin{tabular}{cccc}
+          \toprule[1.5pt]
+          格式字符 & 说明 & 格式字符 & 说明 \\
+          \midrule
+          \%s & 字符串 & \%c & 单个字符 \\
+          \%x & 十六进制整数 & \%o & 八进制整数 \\
+          \%f~~\%F & 浮点数 & \%d~~\%i & 十进制整数 \\
+          \%\% & 字符\% & \%e & 指数(基底为e) \\
+          \bottomrule[1.5pt]
+        \end{tabular}
+      \end{table}
+  
+      format函数使用模板
+      \begin{codeblock}[language=python, caption={format string}]
+        '{[index][:[fill][align][sign][#][width][.precision][type]]}'.format(item1, item2)
+      \end{codeblock}
+
+      \begin{itemize}
+        \item index:可选，表示该位置填入的是format的那个参数(0-base)
+        \item fill:可选，填充字符
+        \item align:可选，<左对齐，>右对齐，\^{}内容居中
+        \item sign:可选，+-,用法与占位符选项相同
+        \item \#:可选，进制前缀显示，也可以选`,'表示添千位分隔符
+        \item width:可选，字段宽度
+        \item .precision:可选，小数位数
+        \item type:可选，指定类型
+      \end{itemize}
+
+      \begin{table}[H]
+        \centering
+        \caption{type options}
+        \label{tab:type options}
+        \begin{tabular}{cccc}
+          \toprule[1.5pt]
+          格式字符 & 说明 & 格式字符 & 说明 \\
+          \midrule
+          S & 字符串类型(默认) & b & 十进制整数转为二进制 \\
+          D & 十进制整数 & o & 十进制整数转为八进制 \\
+          C & 按ASCII码转为字符 & x~~X & 十进制整数转为十六进制 \\
+          e~~E & 转为科学计数法 & f~~F & 转为浮点数，默认6位小数 \\
+          g~~G & 自动切换 & \% & 转为百分数 \\
+          \bottomrule[1.5pt]
+        \end{tabular}
+      \end{table}
+
+      下面给出一些例子
+      \begin{codeblock}[language=python, caption={examples of format string}]
+        number, name, url = 7, "百度", "baidu"
+        template='编号:{:0>9s}\t公司名称:{:s}\t官网:http://www.{:s}.com'
+        context=template.format(number, name, url)
+        context_f=f'编号:{number}\t公司名称:{name}\t官网:http://www.{url}.com'
+
+        f_template='编号:{f_number}\t公司名称:{f_name}\t官网:http://www.{f_url}.com'
+        f_context = f_template.format(f_number = number, f_name = name, f_url = url)
+
+        context='编号:{2}\t公司名称:{0}\t官网:http://www.{1}.com'.format(name, url, number)
+
+        #下面假设有company变量，他有三个成员，分别是name、url和number
+        context='编号:{0.number}\t公司名称:{0.name}\t官网:http://www.{0.url}.com'.format(company)
+      
+        company = {'name': 'baidu', 'number': 7, 'url': 'baidu'}
+        context = '编号:{number}\t公司名称:{name}\t官网:http://www.{url}.com'.format(**company)
+        context = 'This function ran with args: {}, and kwargs: {}'.format(args, kwargs)
+        #这里\{\}中的内容可以是表达式或其他类型的数据(如list，dict)
+      \end{codeblock}
+
+  \subsection{collection}
+    collection包含了dict，list，str等Container，同时提供了一些额外的数据结构，相当于C++标准库。
+    \begin{codeblock}[language=python, caption={namedtuple}]
+      import collection
+
+      #namedtuple可以通过给tuple中每个变量加名称增加代码的可读性。
+      Color = collection.namedtuple('Color', ['red', 'green', 'blue'])
+      color = Color(55, 155, 255); print(color[0], color.red)
+
+      #deque双端队列，可以从两端添加和删除元素
+      collection.deque([1, 2, 3])
+
+      #Counter计数器，计算可迭代对象中元素的频率
+      c = collection.Counter(['a', 'b', 'c', 'a', 'b', 'b'])
+      c.update(['a', 'b']) #继续计数
+      c.most_common(5) #输出最多的5项，tuple组成的list
+
+      #OrderedDict有序字典，记住元素插入顺序
+      collection.OrderedDict([('a', 1), ('b', 2)])
+      
+      #defaultdict可以为字典中没有的元素添加默认值，默认值类型为int
+      dd = collection.defaultdict(int); print(dd['key']) #输出0 
+      
+      #heapq是优先级队列，用最小堆实现
+      heap = collection.heapq.heapify([10, 17, 50, 7, 30, 24, 27, 45, 15, 5, 36, 21])
+      collection.heappush(heap, 13) #插入元素，heap会以满二叉堆形式存储
+      print(heapq.heappop(heap)) #弹出堆顶元素并返回
+
+      c = Counter('hello world!'); c = Counter(['cat', 'dog'])
+      d = Counter({'red': 3, 'blue': 2}); d = Counter(cat=4, dogs=8)
+      print(c['cat'], c.items())
+      ite = c.elements() #返回一个迭代器
+      print(c.most_common(3)) #出现最多的三个
+      print(c.total()) #总数
+      c.subtract(d) #两个counter相减
+    \end{codeblock}
+
+  \subsection{SQLite}
+    sqlite3是python标准库中的数据库模块。sqlite3中数据类型有5种，分别是NULL，INTEGER，REAL(float)，
+    TEXT，BLOB。
+    \begin{codeblock}[language=python, caption={SQLite}]
+      import sqlite3
+
+      #创建并连接数据库
+      conn = sqlite3.connect(':memory:') #将数据存在RAM中，每次关闭都会清空
+      conn = sqlite3.connect('my_database.db') #将数据存在文件中
+
+      c = conn.cursor() #创建指针，数据库中的内容将由cursor完成
+
+      c.execute("""CREATE TABLE IF NOT EXISTS students( #创建名为students的表，并创建3个column
+                  first_name text, #不能创建已经存在的column否则会报错
+                  last_name text,
+                  id integer
+                  )""") #IF NOT EXISTS是可选的
+
+      #向表中添加数据
+      c.execute("INSERT INTO students VALUES ('Amy', 'Elisabeth', 11)")
+      c.execute("INSERT INTO students VALUES ('{}', '{}', {})".format( #用f-string格式化
+          student1.first_name, student1.last_name, student1.id))
+      c.execute("INSERT INTO students VALUES (?, ?, ?)", #可以用一个tuple简化操作
+          (student1.first_name, student1.last_name, student1.id))
+      c.execute("""INSERT INTO students VALUES 
+              (:first_name, :last_name, :pay)""", #可以用dict使操作更清晰
+          {'first_name': student1.first_name, 
+          'last_name': student1.last_name, 
+          'id': student1.id})
+      #从表中读取数据，*表示提取全部
+      c.execute("SELECT * FROM students WHERE last_name='Elisabeth'")
+      c.execute("SELECT * FROM students WHERE last_name=?", ('Elisabeth',)) #1个元素也要加`,'
+      c.execute("SELECT * FROM students WHERE last_name=:last", {'last': 'Elisabeth'}) 
+      get_data = c.fetchone() #从select得到的内容中读取1行
+      get_data = c.fetchmany(5) #从select得到的内容中读取5行，返回一个列表
+      get_data = c.fetchall() #从select得到的内容中读取所有行
+      
+      conn.commit() #需要提交cursor的操作
+      conn.close() #关闭数据库
+
+      #with语句可以让连接，提交等操作更加简便，下面给出两个例子
+      conn = sqlite3.connect('my_database.db') #将数据存在文件中
+      with conn: 
+          c.execute("INSERT INTO students VALUES ('Amy', 'Elisabeth', 11)")
+          #离开with代码块时自动执行conn.commit()
+
+      with sqlite3.connect('my_database.db') as conn:
+          c = conn.cursor
+          c.execute("INSERT INTO students VALUES ('Amy', 'Elisabeth', 11)")
+          #离开with代码块时自动执行conn.commit()和conn.close()
+    \end{codeblock}

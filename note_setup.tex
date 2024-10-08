@@ -69,6 +69,34 @@
 \lstnewenvironment{codeblock}[1][]{%
   \lstset{style=lstStyleCode,#1}}{}
 
+\lstdefinelanguage{HTMLwithJS}{
+    language=HTML,
+    morekeywords={var, let, const, function, if, else, for, while, document, window}, % JavaScript keywords
+    alsoletter={<>},
+    sensitive=true,
+}
+
+\lstdefinelanguage{HTMLwithJinja}{
+    language=HTML,
+    morekeywords={if, else, endif, for, endfor, block, endblock, extends, include},
+    alsoletter={<>},
+    morekeywords={\{, \}},
+    sensitive=true,
+}
+
+\definecolor{lightgray}{rgb}{0.9,0.9,0.9}
+\lstdefinestyle{customjs}{
+    language=HTML, % 或者其他适合的语言
+    backgroundcolor=\color{lightgray}, % 设置背景色
+    commentstyle=\color{green}, % 注释颜色
+    stringstyle=\color{red}, % 字符串颜色
+    keywordstyle=\color{blue}, % 关键字颜色
+    morecomment=[l]{\{\%}, % 处理 {% 的注释
+    morecomment=[l]{\%\}}, % 处理 %} 的注释
+    basicstyle=\ttfamily, % 基本字体
+    showstringspaces=false, % 不显示字符串中的空格
+}
+
 %. 设置计数器格式，以章节进行计数。
 \renewcommand{\thesection}{\arabic{section}}
 \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}

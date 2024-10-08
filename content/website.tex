@@ -56,6 +56,12 @@
         if response.ok: #检验连接是否成功
             print(response.content) #以字节流形式输出网页源码(没有换行符和缩进，可读性差)
             print(response.text) #以文本形式输出网页源码(带有换行符和缩进，可读性好)
+
+        #下载文件
+        import zipfile
+        r = requests.get('<url>') #zip file的url
+        with open('data.zip', 'wb') as f: #建一个data.zip用于保存
+            f.write(r.content)
       \end{codeblock}
 
       为了绕开反爬设计，我们可以请求header。
@@ -121,7 +127,7 @@
       template就是每个url的html模板，建立template可以避免将html语言写到python文件中造成混乱。
 
       在下面的例子中，我们将为root page创建一个template/home.html文件，注意这个文件必须放在template文件夹下。
-      \begin{codeblock}[language=html, caption={template/home.html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={template/home.html}]
         <!DOCTYPE html>
         <html>
         <head>
@@ -189,7 +195,6 @@
       \end{codeblock}
 
       html文件中有一些特殊字符需要转义:
-      \begin{multicols}{2}
         \begin{itemize}
           \item 大于号 小于号<~~>: \&lt;~~\&rt;
           \item 书名号《~~》: \&Lt;~~\&Rt;
@@ -200,7 +205,6 @@
           \item 乘号 $\times$: \&times;
           \item 除号 $\div$: \&divide;
         \end{itemize}
-      \end{multicols}
 
       \begin{codeblock}[language=python, caption={using template in my\_app.py}]
         @app.route("/")
@@ -217,7 +221,7 @@
       同一个网站中template往往有很多重合部分，template inheritance可以实现统一设置模板。
 
       下面，我们先创建一个layout.html，其中包含网页的公共部分。 
-      \begin{codeblock}[language=html, caption={layout.html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={layout.html}]
         <head>
             {% if title %}
                 <title>My app - {{ title }}</title>
@@ -231,7 +235,7 @@
       \end{codeblock}
 
       在home.html中使用layout.html。
-      \begin{codeblock}[language=html, caption={Using template inheritance}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={Using template inheritance}]
         {% extends "layout.html" %} 
         {% block content %}
           {% for post i posts %} #读出posts的内容
@@ -243,7 +247,7 @@
 
     \subsubsection{bootstrap}
       bootstrap定义了一些方法来优化网页，参考\href{https://getbootstrap.com/docs/5.3/getting-started/introduction/}{bootstrap官方文档}。
-      \begin{codeblock}[language=html, caption={bootstrap}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={bootstrap}]
         <!doctype html>
         <html lang="en">
         <head>
@@ -284,7 +288,7 @@
       main.css中可以为每个板块类定义样式，这个样式会自动生效于网页中所有对应的类。
       
       下面这个样例表示在`article-metadata'类的元素内的链接(<a>标签)当鼠标悬停(hover)时的样式。
-      \begin{codeblock}[language=HTML, caption={static/main.css}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={static/main.css}]
         .article-metadata a:hover {
           color: #333;
           text-decoration: none;
@@ -321,7 +325,7 @@
             return render_template('home.html', posts=posts, title="Home page")
       \end{codeblock}
 
-      \begin{codeblock}[language=html, caption={use posts in html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={use posts in html}]
         <head>
             {% if title %}
                 <title>My app - {{ title }}</title>
@@ -372,7 +376,7 @@
       \end{codeblock}
 
       创建register.html显示表单。<form>用于建立表单，<fieldset>用于将表单中的内容进行分组。
-      \begin{codeblock}[language=html, caption={register.html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={register.html}]
         {% extends "layout.html" %} 
         {% block content %}
             <div class="content-section">
@@ -482,7 +486,7 @@
       \end{codeblock}
 
       在layout.html中显示flash的内容并完成重定向。
-      \begin{codeblock}[language=html, caption={layout.html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={layout.html}]
         {% with messages = get_flashed_messages(with_categories=true) %} <!--success就是true-->
             {% if messages %}
                 {% for category, message in messages %}
@@ -663,7 +667,7 @@
       \end{codeblock}
 
       在html文件中调用FileField。
-      \begin{codeblock}[language=html, caption={Using FileField in html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={Using FileField in html}]
         <form method="POST" action="" enctype="multipart/form-data">
         <!--这里必须给出编码方式enctype-->
           <fieldset>
@@ -693,7 +697,7 @@
       \end{codeblock}
 
       在html文件中，可以设置一个导航栏，导航到指定页码，方便随机访问。
-      \begin{codeblock}[language=html, caption={Using pagination in home.html}]
+      \begin{codeblock}[language=HTMLwithJinja, caption={Using pagination in home.html}]
         {% for page_num in posts.items %}
             <!--处理当前page的post内容-->
         {% endfor %}

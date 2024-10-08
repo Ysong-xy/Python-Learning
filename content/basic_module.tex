@@ -108,7 +108,8 @@
         }
 
         #export PROMPT\_COMMAND="conda\_auto\_env;\$PROMPT\_COMMAND"
-        #\$PROMPT\_COMMAND每次按下enter时都会运行，若不需要，可以注释掉最后一行，并使用conda\_auto\_env手动调用环境
+        #\$PROMPT\_COMMAND每次按下enter时都会运行
+        #若不需要，可以注释掉最后一行，并使用conda\_auto\_env手动调用环境
       \end{codeblock}
 
     \subsubsection{import modules}
@@ -130,11 +131,11 @@
       若B.py同样import main，那么A.py也会从头开始运行整个文件，而这时main.py会找不到其import B.py中的部分，
       这时就触发了circular import。
 
-  \subsection{builtins}
+  \subsection{builtins module}
     最基础的module，包含了print len range abs等常用函数，TypeError ValueError KeyError IndexError
     等常见异常，True False None等内置常量，int str list dict set等内置类型，不需要导入即可使用。
 
-  \subsection{sys}
+  \subsection{sys module}
     有关系统操作的module
     \begin{codeblock}[language=python, caption={sys module}]
       print(sys.path)
@@ -146,7 +147,7 @@
       print(sys.version) #输出python版本，用来检验编译器
     \end{codeblock}
 
-  \subsection{os}
+  \subsection{os module}
     os module可以实现操作系统相关的功能。
     \begin{codeblock}[language=python, caption={os module}]
       #文件管理
@@ -159,7 +160,7 @@
       os.rename('test.txt', 'demo.txt') #重命名文件
       print(os.stat('demo.txt')) #查看文件属性，如文件大小(st\_size)，最后一次修改时间(st\_mtime)
       for dirpath, dirnames, filenames in os.walk(/mnt/d/Desktop/python) #递归的遍历目录下所有文件
-          if f.endswith('.py): #筛出所有python脚本文件
+          if f.endswith('.py'): #筛出所有python脚本文件
       #dirpath表示当前所在的目录，dirname表示当前目录下的文件夹，filenames表示当前目录下的文件名
 
       os.environ.get('HOME') #返回home的地址，这里还可以查询其他环境变量，如PATH
@@ -171,7 +172,112 @@
       os.path.splitext('/mnt/d/test.txt') #返回(`/mnt/d/test',`.txt')
     \end{codeblock}
 
-  \subsection{logging}
+  \subsection{subprocess module}
+    subprocess可以用于在终端中执行任务。
+    \begin{codeblock}[language=python, caption={subprocess module}]
+      subprocess.run('ls') #在terminal中运行ls，若运行失败不会abort
+      subprocess.run('ls', check=True) #在terminal中运行ls，若运行失败会abort
+      subprocess.run('ls', stderr=subprocess.DEVNULL) #在terminal中运行ls，忽略所有error
+
+      p1 = subprocess.run(['ls', '-la']) #捕获运行的结果
+      p1.args; p1.returncode; p1.stderr #指令，返回值(0表示没有出错，1表示出错)，标准错误流
+
+      p1 = subprocess.run(['ls', '-la'], capture_output=True) #捕获运行的输出(字节流)
+      print(p1.stdout.decode()) #返回标准输出
+      p1 = subprocess.run(['ls', '-la'], capture_output=True, text=True) #捕获运行的输出(字符串)
+      print(p1.stdout); #返回标准输出
+
+      with open('output.txt', 'w') as f:
+          p1 = subprocess.run(['ls', '-la'], stdout=f, text=True) #输出到文件中
+
+      p1 = subprocess.run(['cat', 'test.txt'], capture_output=True, text=True)
+      p2 = subprocess.run(['grep', '-n', 'test'], capture_output-True, text-True, input=[p1.stdout])
+      #传递输出和输入值，逐步完成process
+    \end{codeblock}
+
+  \subsection{time module}
+    time module可以用于计时
+    \begin{codeblock}[language=python, caption={time module}]
+      time.sleep(1) #将进程挂起1s
+      t = time.time() #返回linux时间戳，单位都是秒
+      t1 = time.perf_counter(); t2 = time.perf_counter() #高精度时间计数器
+      t3 = time.process_time(); t4 = time.process_time() #高精度的CPU时间
+      print(t2 - t1) #计算时间差，会包含sleep()的时间
+      print(t4 - t3) #计算时间差，不会包含sleep()的时间
+    \end{codeblock}
+
+    \begin{codeblock}[language=python, caption={Timer Class}]
+      class Timer:  #@save
+          """记录多次运行时间"""
+          def __init__(self):
+              self.times = []
+              self.start()
+
+          def start(self):
+              """启动计时器"""
+              self.tik = time.time()
+
+          def stop(self):
+              """停止计时器并将时间记录在列表中"""
+              self.times.append(time.time() - self.tik)
+              return self.times[-1]
+
+          def avg(self):
+              """返回平均时间"""
+              return sum(self.times) / len(self.times)
+
+          def sum(self):
+              """返回时间总和"""
+              return sum(self.times)
+
+          def cumsum(self):
+              """返回累计时间"""
+              return np.array(self.times).cumsum().tolist()
+    \end{codeblock}
+
+  \subsection{threading module}
+    \subsubsection{threading}
+      threading module用于处理多线程。
+      \begin{codeblock}[language=python, caption={threading module}]
+        my_function(sec):
+            time.sleep(sec)
+            return "accomplished"
+        t1 = threading.Thread(target=my_function, args=(1,)) #创建一个线程
+        t2 = threading.Thread(target=my_function, args=(2,)) #创建一个线程
+        t1.start(); t2.start(); #启动线程，同时运行余下部分(3个线程)
+        t1.join(); t2.join(); #待t1,t2线程结束后再继续运行余下部分(2个线程)
+      \end{codeblock}
+
+    \subsubsection{concurrent.futures}
+      \begin{codeblock}[language=python, caption={concurrent.futures module}]
+        import concurrent.futures
+        
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            f1 = executor.submit(my_function, 1) 
+            f2 = executor.submit(my_function, 2) #这两个线程是并行的
+            print(f1.result()); print(f2.result())
+
+            results = [executor.submit(my_function, i) for i in range(10)]
+            for f in concurrent.futures.as_completed(results):
+                print(f.result()) #根据完成先后打印
+
+            results = executor.map(my_function, [i for i in range(5)])
+            for result in results:
+                print(result) #根据提交先后打印
+      \end{codeblock}
+
+    \subsubsection{multiprocessing}
+      \begin{codeblock}[language=python, caption={multiprocessing module}]
+        processes = []
+        for _ in range(i):
+            p = multiprocessing.Process(target=my_function, args=(i,))
+            p.start()
+            processes.append(p)
+        for process in processes:
+            process.join()
+      \end{codeblock}
+
+  \subsection{logging module}
     logging module是python标准库中用于记录日志的模块，它可以在程序运行时输出各种级别的日志。
     \begin{codeblock}[language=python, caption={logging module}]
       #basicConfig用于设置日志的基本信息，这会设置root logger，影响所有的logger
@@ -217,7 +323,170 @@
       logging.exception("这是一条带有Traceback的错误信息")
     \end{codeblock}
 
-  \subsection{date}
+  \subsection{re module}
+  
+    \subsubsection{regular expression}
+      正则表达式由元字符，限定符，选择字符，排除字符等组成。
+
+      元字符中的`.'`\$'`\^{}',限定符中的`?'`+'`*'以及`\textbackslash'若需要匹配，则应该使用转义字符。
+      \begin{table}[H]
+        \centering
+        \caption{meta-character}
+        \label{tab:meta-character}
+        \begin{tabular}{cc}
+          \toprule[1.5pt]
+          元字符 & 匹配对象 \\
+          \midrule
+          . & 换行符以外的任意字符\lbrack\^{}\textbackslash n\textbackslash r\rbrack \\
+          \textbackslash w & 字母、数字、下划线或汉字 \\
+          \textbackslash W & 非字母、数字、下划线、汉字 \\
+          \textbackslash s & 任意空白字符(\lbrack\textbackslash f\textbackslash n\textbackslash r\textbackslash t\textbackslash v\rbrack) \\
+          \textbackslash S & 任意非空白字符 \\
+          \textbackslash d & 数字字符 \\
+          \textbackslash D & 非数字字符 \\
+          \textbackslash b & 单词的边界(开始或结束) \\
+          \textbackslash B & 非单词的边界 \\
+          \^{} & 字符串的开始 \\
+          \$ & 匹配字符串的结束 \\
+          \bottomrule[1.5pt]
+        \end{tabular}
+      \end{table}
+
+      \begin{table}[H]
+        \centering
+        \caption{qualifier}
+        \label{tab:qualifier}
+        \begin{tabular}{cc}
+          \toprule[1.5pt]
+          限定符 & 含义 \\
+          \midrule
+          ? & 匹配0-1次 \\
+          + & 匹配至少1次,会贪婪匹配 \\
+          * & 匹配0次或多次,会贪婪匹配 \\
+          +?~~*? & 匹配规则同上，但是非贪婪 \\
+          \{n\} & 匹配n次 \\
+          \{n,\} & 匹配至少n次 \\
+          \{n,m\} & 匹配至少n次，至多m次 \\
+          | & 匹配左右其一 \\
+          \bottomrule[1.5pt]
+        \end{tabular}
+      \end{table}
+
+      \begin{itemize}
+        \item 方括号表示字符集合，如\lbrack aeiou\rbrack 匹配元音字符，\lbrack a-z\rbrack 匹配小写字符。
+          \lbrack\textbackslash u4e00-\textbackslash u9fa5\rbrack 匹配汉字。
+        \item 方括号内的\^{}表示排除字符，如\lbrack\^{} aeiou\rbrack 匹配非元音字母的所有字符。
+        \item 方括号中的无法使用限定符，限定符都判定为原来的字符。
+        \item 小括号可以改变限定符的作用范围，如(thir|four)th相当于thirth|fourth，(\textbackslash .\lbrack 0-9\rbrack\{1,3\})\{3\}
+          会将括号中的内容重复三次。
+        \item 小括号还可以基于匹配模式从字符串中提取子字符串，组成一个元组。
+      \end{itemize}
+
+      Python中使用正则表达式需要将部分\textbackslash 转义,由于需要转义的\textbackslash 可能很多，可以使用模式字符串，即在字符串前加上r或R，
+      例如:r`\textbackslash bm\textbackslash w*\textbackslash b'。
+
+  \subsubsection{match string}
+    Python中的re模块可以通过正则表达式处理字符串。
+
+    下面是常用的匹配函数，这里匹配的字符串区间没有重叠的部分。
+    \begin{codeblock}[language=python, caption={string matching}]
+      import re #导入模块
+
+      pattern=r'mr_\w+' #模式字符串
+      string='MR_SHOP mr_shop' #待匹配字符串
+
+      #match方法可以从字符串开始处开始匹配，若匹配失败，返回None
+      match=re.match(pattern,string,re.I) #不区分大小写匹配字符串,返回一个match对象
+      print(match.start());print(match.end()) #输出匹配字符串起始位置
+      print(match.span()) #输出匹配字符串起止位置元组
+      print(match.string) #输出匹配前的字符串，即string
+      print(match.group()) #输出匹配的数据
+
+      #search方法可以搜索字符串中第一个可以匹配的子串，返回一个match对象
+      match=re.search(pattern,string,re.I) #不区分大小写匹配字符串，返回一个match对象
+
+      #findall和finditer方法可以搜索字符串中所有可以匹配的子串
+      match = re.findall(pattern,string,re.I) #不区分大小写匹配字符串，返回一个match对象
+      print(match) #输出匹配子串的列表
+      match = re.finditer(pattern, string, re.I) #返回一个由match对象组成的迭代器
+
+      #上面的代码可以通过编译模式字符串进行简化
+      pattern = re.compile(r'mr_\w+', re.I)
+      match = pattern.match(string)
+      match = pattern.match(string)
+      match = pattern.findall(string)
+      match = pattern.finditer(string)
+
+      #捕获组的使用
+      pattern = re.compile(r'(\w+)-(\d+)-(\w+)')
+      text = "abc-123-def"
+      match = pattern.match(text) #这里使用方法与上面相同
+      #match.group(0)为'abc-123-def', match.group(i)为第i个捕获组捕获的内容
+      match = pattern.findall(text) #match = \lbrack(`abc', `123', `def')\rbrack
+    \end{codeblock}
+
+    \begin{table}[H]
+      \centering
+      \caption{matching pattern}
+      \label{tab:matching pattern}
+      \begin{tabular}{cc}
+        \toprule[1.5pt]
+        标志 & 含义 \\
+        \midrule
+        A~~ASCII & 只匹配ASCII范围内的字符 \\
+        I~~IGNORECASE & 不区分大小写 \\
+        M~~MULTILINE & 将\^{}和\$ 用于每一行的开头和结尾 \\
+        S~~DOTALL & .匹配所有字符，包括换行符 \\
+        X~~VERBOSE & 忽略未转义的空格和注释 \\
+        \bottomrule[1.5pt]
+      \end{tabular}
+    \end{table}
+
+  \subsubsection{substitute string}
+    sub方法可以实现vim中批量搜索并替换字符串的操作。
+
+    模板为:re.sub(pattern,repl,string,count,flags)
+    \begin{itemize}
+      \item pattern:模式字符串
+      \item repl:替换后的子字符串
+      \item string:原始字符串
+      \item count:可选，最大替换次数，默认为0，表示替换所有的匹配
+      \item flags:可选，见\autoref{tab:matching pattern}
+    \end{itemize}
+
+    \begin{codeblock}[language=python, caption={string substitution}]
+      import re
+
+      pattern = r'1[34578]\d{9}' #模式字符串
+      string='电话号码是:13611111111'
+      result=re.sub(pattern,'1xxxxxxxxxx',string)
+
+      pattern = re.compile(r'(1[34578]\d)\d{8}')
+      string = 'The phone numbers are:13611111111,15888888888,18333333333'
+      result = pattern.sub(r'\1********', string) #这里\textbackslash 1表示第一个捕获组
+      result = 'The phone numbers are:136********,158********,183********'
+    \end{codeblock}
+
+  \subsubsection{split string}
+    re.split方法可以根据正则表达式切分字符串，匹配正则表达式的子串将被当作分隔符，并将分割结果以列表的形式返回。
+
+    模板为:re.split(pattern,string,\lbrack maxsplit\rbrack,\lbrack flags\rbrack)
+    \begin{itemize}
+      \item pattern:模式字符串
+      \item string:待切分的字符串
+      \item maxsplit:可选，最大拆分次数
+      \item flags:可选，见\autoref{tab:matching pattern}
+    \end{itemize}
+    \begin{codeblock}[language=python, caption={string segmentation}]
+      import re
+
+      pattern=r'[?&]'
+      url='http://www.mingrisoft.com/login.jsp?username="mr"&pwd="mrsoft"'
+      result=re.split(pattern,url)
+      print(result)
+    \end{codeblock}
+
+  \subsection{date module}
     \subsubsection{datetime module}
       datetime用于时间和日期戳记录和转换
       \begin{codeblock}[language=python, caption={datetime \& pytz}]
@@ -255,7 +524,7 @@
         dt_time = datetime.datetime.fromtimestamp(mod_time) #将时间戳转换成datetime类型
       \end{codeblock}
 
-    \subsubsection{calendar}
+    \subsubsection{calendar module}
       calendar用于计算天数，星期数，星期几等数据。
       \begin{codeblock}[language=python, caption={calendar module}]
         today = datetime.date.today()
@@ -263,17 +532,7 @@
         #输出一个tuple，第一个元素表示今天星期几Monday0 Sunday6，第二个表示本月有几天
       \end{codeblock}
 
-  \subsection{time}
-    time module可以用于计时
-    \begin{codeblock}[language=python, caption={time module}]
-      t = time.time() #返回linux时间戳，单位都是秒
-      t1 = time.perf_counter(); t2 = time.perf_counter() #高精度时间计数器
-      t3 = time.process_time(); t4 = time.process_time() #高精度的CPU时间
-      print(t2 - t1) #计算时间差，会包含sleep()的时间
-      print(t4 - t3) #计算时间差，不会包含sleep()的时间
-    \end{codeblock}
-
-  \subsection{PIL}
+  \subsection{PIL module}
     PIL module可以处理图片，module中的具体内容见\href{https://pillow-cn.readthedocs.io/zh-cn/latest/}{\underline{PIL官方文档}}。
     \begin{codeblock}[language=python, caption={PIL}]
       from PIL import Image, ImageFilter
@@ -289,7 +548,7 @@
       image1.filter(ImageFilter.GaussianBlur(15)) #模糊图片，模糊程度可选
     \end{codeblock}
 
-  \subsection{random}
+  \subsection{random module}
     \begin{codeblock}[language=python, caption={random module}]
       value = random.random() #生成[0.0, 1.0)的随机浮点数
       value = random.uniform(1, 10) #生成[1.0, 10.0]的随机浮点数
@@ -299,19 +558,35 @@
       results = random.choices(['Red', 'Greed', 'Blue'], weight=[18, 18, 2], k=10) 
       shuffled_list = list(range(2, 30)); random.shuffle(shuffled_list) #随机打乱list
       hand = random.sample(list(range(50)), k=5) #取5个样本，5个样本不会重复
+      random.shuffle(my_list) #直接打乱列表，没有返回值
     \end{codeblock}
 
-  \subsection{secrets}
+  \subsection{secrets module}
     secrets可以生成随机长密码。
     \begin{codeblock}[language=python, caption={secrets module}]
       import secrets
       print(secrets.token_hex(16)) #16Bytes
     \end{codeblock}
 
-  \subsection{cn2an}
+  \subsection{cn2an module}
     cn2an module可以实现中文数字到阿拉伯数字的转换。
     \begin{codeblock}[language=python, caption={cn2an}]
       def chinese_to_int(chinese_str):
           arabic_number = cn2an.cn2an(chinese_str, 'normal')
           return arabic_number
+    \end{codeblock}
+
+  \subsection{Progress Bar}
+    \subsubsection{tqdm module}
+    \begin{codeblock}[language=python, caption={tqdm module}]
+      from tqdm import tqdm
+      import time
+
+      for i in tqdm(range(500), desc="Processing"):
+          time.sleep(0.01)
+
+      progress_bar = tqdm(total=2000, desc="Processing")
+      for i in range(200):
+          for j in range(10):
+              progress_bar.update(1)
     \end{codeblock}
