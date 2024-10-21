@@ -1,4 +1,4 @@
-\section{deep learning}
+\section{Deep Learning}
 
   \subsection{pytorch基本操作}
     \subsubsection{数据操作}
@@ -18,9 +18,11 @@
         x = torch.tensor([[1, 3, 5, 6], [6, 9, 3, 5]]) #由list创建
         x = torch(2.0) #创建一个标量
 
-        print(x.shape); print(x.numel()) #获取矩阵形状和总大小
+        print(x.shape); print(x.numel()) #获取矩阵形状/大小
         print(len(x)) #获取向量的维度或矩阵列向量的维度
         x = x.reshape(3, 4); x = x.reshape(3, 2, -1) #改变矩阵的形状，行优先
+        A = A.contiguous() #将矩阵拷贝成内存中连续存储的形式(用于转置/截取等操作后)
+        A = A.view(3, 4) #与reshape效果相同，但是要求内存连续(contiguous())
         x = x.unsqueeze(0) #在第0维插入一个新的维度
         x = x.permute((1, 0)) #将坐标轴顺序调换为(1, 0)
         A = torch.cat(x, y, dim=0) #将两个列数相同的张量纵向拼接
@@ -33,11 +35,13 @@
         x[0: 2, :] = 12 #将前两行全部改成12
         x = x[None, :] #在axis=0处加入一个维度
         x.fill_(10.0) #用10.0填充整个张量，可用于修改0-dim tensor
+        A = A.narrow(0, from, to) #截取矩阵，沿axis=0截取from至to的部分
 
         A = x.numpy(dtype=float); B = torch.tensor(A) #torch和numpy转换
         A = x.detach().numpy() #detach可以丢掉当前计算图，不参与梯度计算
         x.detach_() #原地操作丢掉当前计算图
-        A = torch.tensor(data_frame.to_numpy()); B = pd.DataFrame(A.numpy()) #torch和DataFrame转换
+        A = torch.tensor(data_frame.to_numpy()); B = pd.DataFrame(A.numpy()) 
+            #torch和DataFrame转换
         val = a.item(); val = float(a); val = int(a) #大小为1的张量转标量
         x = x.type(y.dtype) #将x改为y的类型
         x_long = x.long() #修改数据类型为long
@@ -82,7 +86,8 @@
         net = Net() #nn.module的子类
         torch.save(net.state_dict(), 'net.params')
         clone = Net(); clone.load_state_dict(torch.load('net.params'))
-        clone.eval()
+        clone.eval() #切换到评估模式(忽略Dropout，BatchNorm使用训练期间的累积均值方差)
+        clone.train() #切换到训练模式(运行Dropout，BatchNorm使用当前batch的均值方差)
       \end{codeblock}
 
     \subsubsection{线性代数}
@@ -107,7 +112,7 @@
         x.grad.zero_() #在默认情况下，PyTorch会累加梯度，我们需要清除之前的值
         with torch.no_grad(): #在这个上下文中所有的操作不会计算梯度
 
-        y = x * x; u = y.detach() #求微分时将y是为一个常数，丢弃计算图中y的信息
+        y = x * x; u = y.detach() #求微分时将y视为一个常数，丢弃计算图中y的信息
         z = u * x; z.sum().backward()
         print(x.grad) #x.grad == u，全部为True
         x.grad.zero_()
@@ -151,7 +156,7 @@
             #延迟初始化，只给定层的输出维数，在给定输入后根据输入的维数确定权重的shape并初始化
 
         loss = nn.MSELoss() #定义损失函数为$L_2$范数，更多损失函数参考\href{https://pytorch.org/docs/stable/nn.html#loss-functions}{\underline{\texttt{torch.nn loss-functions}}}
-            #nn中的损失函数由reduction选项，可选'mean', 'none', 'sum'表示对损失值进行预操作，默认'mean'
+            #reduction选项，可选'mean', 'none', 'sum'表示对损失值进行预操作，默认'mean'
             #注意MSELoss计算平方误差时不带系数1/2
         trainer = torch.optim.SGD(net.parameters(), lr=0.03) #设置优化算法为随机梯度下降
 
@@ -250,7 +255,7 @@
       \end{codeblock}
 
   \subsection{获取数据集}
-    \subsubsection{线性回归数据集}
+    \subsubsection{随机生成数据集}
       \begin{codeblock}[language=python, caption={Get linear data}]
         def synthetic_data(w, b, num_examples):  #@save
             """生成y=Xw+b+噪声"""
@@ -268,6 +273,62 @@
                 batch_indices = torch.tensor(
                     indices[i: min(i + batch_size, num_examples)])
                 yield features[batch_indices], labels[batch_indices]
+      \end{codeblock}
+
+    \subsubsection{DataLoader}
+      DataLoader是Pytorch上用于加载数据的类，它提供了迭代器的功能。
+      \begin{codeblock}[language=python, caption={DataLoader}]
+        import torch
+        import torch.utils.data
+
+        train_iter = torch.utils.data.DataLoader( #创建DataLoader迭代器
+          dataset, # dataset from which to load the data
+          batch_size, # samples per batch to load(default: 1)
+          shuffle, # have the data reshuffled at every epoch(default: False)
+          sampler # An iterator defines the strategy to draw samples from the dataset
+        )
+      \end{codeblock}
+
+      DataLoader会完成的工作和使用方法:
+      \begin{itemize}
+        \item 将Dataset转换成Tensor类型(不改变样本的类型，dataset需要有\_\_len\_\_和\_\_getitem\_\_)
+        \item 打乱数据(可选)，进行批处理
+        \item dateset可以是list, np.array, torch.tensor等
+      \end{itemize}
+
+    \subsubsection{数据加载切分}
+      \begin{itemize}
+        \item torch.utils.data可以用于切分数据。
+        \item torch.utils.data.DataLoader接收数据集，并返回一个iterator
+        \item torch.utils.data.Dataset是一个抽象基类，数据集类可以是他的子类
+      \end{itemize}
+
+      \begin{codeblock}[language=python, caption={Customize DataLoader}]
+        import torch
+        import torch.utils.data
+
+        # 自定义数据集
+        class CustomDataset(torch.utils.data.Dataset):
+            def __init__(self, data, labels):
+                self.data = data # 这不用调用Dataset的构造函数
+                self.labels = labels
+
+            def __len__(self):
+                return len(self.data)
+
+            def __getitem__(self, index):
+                # 返回指定索引的数据和标签
+                return self.data[index], self.labels[index]
+
+        # 创建数据和标签
+        data = torch.randn(100, 3)  # 100 个样本，每个样本 3 个特征
+        labels = torch.randint(0, 2, (100,))  # 100 个标签
+
+        # 创建自定义数据集对象
+        dataset = CustomDataset(data, labels)
+
+        # 使用 DataLoader 加载自定义数据集
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=10, shuffle=True)
       \end{codeblock}
 
     \subsubsection{Fashion-MNIST图像分类数据集}
@@ -301,38 +362,4 @@
                 data.DataLoader(mnist_train, batch_size, shuffle=False, 
                                 num_workers=get_dataloader_worker())
             ) #采用4个进程来读取数据
-      \end{codeblock}
-
-    \subsubsection{数据加载切分}
-      \begin{itemize}
-        \item torch.utils.data可以用于切分数据。
-        \item torch.utils.data.DataLoader接收数据集(需要有\_\_len\_\_和\_\_getitem\_\_)，并返回一个iterator
-        \item torch.utils.data.Dataset是一个基类，数据集类可以是他的子类(当然也可以是list，torch.tensor等)
-      \end{itemize}
-      \begin{codeblock}[language=python, caption={DataLoader}]
-        import torch
-        import torch.utils.data
-
-        # 自定义数据集
-        class CustomDataset(torch.utils.data.Dataset):
-            def __init__(self, data, labels):
-                self.data = data
-                self.labels = labels
-
-            def __len__(self):
-                return len(self.data)
-
-            def __getitem__(self, index):
-                # 返回指定索引的数据和标签
-                return self.data[index], self.labels[index]
-
-        # 创建数据和标签
-        data = torch.randn(100, 3)  # 100 个样本，每个样本 3 个特征
-        labels = torch.randint(0, 2, (100,))  # 100 个标签
-
-        # 创建自定义数据集对象
-        dataset = CustomDataset(data, labels)
-
-        # 使用 DataLoader 加载自定义数据集
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=10, shuffle=True)
       \end{codeblock}

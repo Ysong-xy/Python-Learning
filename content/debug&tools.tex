@@ -1,4 +1,4 @@
-\section{debug \& tools}
+\section{Debug \& Tools}
 
   \subsection{doctest}
     doctest可以检查函数的输出,在代码注释样例中给出一组输入输出，若结果错误会报错。
@@ -37,7 +37,7 @@
     try,except用来处理可能出现报错的情况，并提供捕获错误的功能。
 
     常见的错误类型如下，他们都有一个共同的父类Exception
-    \begin{table}
+    \begin{table}[htb]
       \centering  
       \caption{Types of Error}
       \label{tab: types of error}
@@ -102,8 +102,9 @@
     \end{codeblock}
 
   \subsection{Unit Testing}
-    unittest是标准库中的一个module，可以用于代码分块debug。unittest中有很多assert类型，
-    参考\href{https://docs.python.org/3/library/unittest.html#module-unittest}{\underline{unittest文档}}
+    unittest是标准库中的一个module, 可以用于代码分块debug。 
+    
+    unittest 中有很多assert类型，参考\href{https://docs.python.org/3/library/unittest.html#module-unittest}{\underline{unittest文档}}
     \begin{codeblock}[language=python, caption={Unit Testing}]
       import unittest
       import app #假设app.py是待测的文件
@@ -158,7 +159,8 @@
                   mocked_get.return_value.ok = True
                   mocked_get.return_value.text = "Success!" #捏造一个成功连接，返回Success
                   result = get_conn() #试运行get\_conn
-                  mocked_get.assert_called_with('http://company.com/Schafer/May') #检验url的正确性
+                  mocked_get.assert_called_with('http://company.com/Schafer/May') 
+                      #检验url的正确性
                   self.assertEqual(result, 'Success') #检验get\_conn的返回值
 
       if __name__ == '__main__':
@@ -179,4 +181,174 @@
     jupyter notebook可以用于代码笔记，代码汇报等，提供代码实时运行的功能。可以在ubuntu中打开。
     \begin{codeblock}[language=bash, caption={run jupyter notebok}]
       jupyter notebook
+    \end{codeblock}
+
+  \subsection{virtualenv}
+    virtualenv是指项目运行的module环境，这个环境可以不包含global环境中的所有module。
+    \begin{codeblock}[language=bash, caption={setup virtualenv}]
+      pip install virtualenv 
+      mkdir Environments
+      cd Environments
+      virtualenv project1_env -p /usr/bin/python3.10 #创建virtualenv环境，python版本可选
+      source project1_env/bin/activate #activate virtualenv
+      pip install numpy #这里下载所需的module即可
+      pip install -r requirements.txt #由文件下载所有module 
+      pip freeze --local > requirements.txt #将virtualenv中的module整理成文档
+      deactivate #退出virtualenv
+      rm -rf project1_env #删除已创建的virtualenv环境
+    \end{codeblock}
+
+  \subsection{pipenv}
+    管理环境是很有必要的，若所有项目都在base环境中运行，package的更新可能导致项目不可用。
+
+    pipenv结合了pip和virtualenv，可以用来管理代码运行环境。
+    pipenv由packages(生产环境运行必须有的包)，dev-packages(开发环境所需的包)
+
+    Pipfile列出了基本信息，Pipfile.lock是决定性的，列出了具体信息。
+    \begin{codeblock}[language=python, caption={pipenv}]
+      pipenv install requests #向package中添加module，环境保存在Pipfile中
+      pipenv install pytest --dev #向dev中添加module
+      pipenv uninstall requests #删除module
+
+      pipenv install #安装Pipfile中的所有module
+      pipenv install --ignore-pipfile #安装Pipfile.lock中的所有module
+      pipenv install -r requirement.txt #利用文件加载环境
+      pipenv graph #列出环境内容，包括依赖关系
+      pipenv lock -r > requirements.txt #整理环境内容
+      pipenv lock #更新pip.lock
+
+      pipenv --python 3.6 #修改python版本，直接修改Pipfile不会修改环境
+      pipenv --rm #删除环境，不会删除Pipfile
+      pipenv install #由Pipfile重建环境
+      pipenv --venv #查看虚拟环境目录
+      pipenv check #检查是否能更新，Pipfile和环境是否对应
+
+      pipenv shell #激活环境
+      pipenv run python #在环境里运行指令(打开python)
+      exit #退出环境 
+
+      touch .env #这个文件可以设置独属于这个环境的环境变量
+    \end{codeblock}
+
+    \begin{codeblock}[language=python, caption={.env}]
+      SECRET_KEY="MySuperSecretKey" #局部环境变量
+    \end{codeblock}
+
+  \subsection{anaconda/miniconda}
+    anaconda也可以用来管理module和环境，其效果相当于pip+virtualenv。
+    anaconda的优势在于可以安装不属于python的module，且可提供图形化管理功能。
+
+    注意，anaconda和pipenv有冲突，不能一起使用。
+    \begin{codeblock}[language=bash, caption={anaconda}]
+      conda create --name my_app python=2.7 flask sqlalchemy
+      #创建一个名为my\_app的项目，项目环境中带有flask和sqlalchemy，python版本为2.7
+      conda activate my_app #激活环境，默认环境为base
+      conda deactivate #退出环境
+      conda env list #列出所有已创建的环境 
+      conda remove --name my_app --all #删除已有的环境
+      conda env export > environment.yaml #导出environment的内容
+      conda env export create -f environment.yaml #通过文件创建环境
+    \end{codeblock}
+
+    有时我们需要记录环境与对应项目的目录，这是我们可以在环境目录(可以通过conda env list查看)
+    etc/conda/activate.d/env\_vars.sh，etc/conda/deactivate.d/env\_vars.sh，这两个
+    文件分别会在activate和deactivate时自动运行。
+    \begin{codeblock}[language=bash, caption={activate.d/env\_vars.sh}]
+      #!/bin/sh
+      export DATABASE_URI="postgresql://user:pass@db_server:5432/test_db"
+      #just add anything you need
+    \end{codeblock}
+    \begin{codeblock}[language=bash, caption={deactivate.d/env\_vars.sh}]
+      #!/bin/sh
+      unset DATABASE_URI
+    \end{codeblock}
+
+    可以通过\~{}/.bashrc中加入以下函数以自动启用文件夹中的environment.yaml。
+    \begin{codeblock}[language=bash, caption={conda\_auto\_env}, mathescape=false]
+      function conda_auto_env() {
+        if [ -e "environment.yaml" ]; then
+          ENV_NAME=$(head -n 1 environment.yaml | cut -f2 -d " ") 
+          #Check if you are already in the environment
+          if [[ $CONDA_PREFIX != *$ENV_NAME* ]]; then
+              #Try to activate environment
+              conda activate $ENV_NAME &>/dev/null
+          fi
+        fi
+      }
+
+      #export PROMPT\_COMMAND="conda\_auto\_env;\$PROMPT\_COMMAND"
+      #\$PROMPT\_COMMAND每次按下enter时都会运行
+      #若不需要，可以注释掉最后一行，并使用conda\_auto\_env手动调用环境
+    \end{codeblock}
+
+  \subsection{docker}
+    docker也是一个环境管理工具，它不仅能打包python的module，还可以打包整个Linux环境或其指定部分，
+    相当于一个小型的虚拟机。
+    \begin{codeblock}[language=bash, caption={docker}]
+      docker run -itd --name ubuntu-test ubuntu /bin/bash #以命令行模式新建容器
+      docker stop ubuntu-test #停止容器
+      docker start ubuntu-test #启动已经停止的容器
+      docker restart ubuntu-test #重新启动停止或正在运行的容器
+      docker rm ubuntu-test #删除容器，只能删除停止的容器
+      docker rm -f ubuntu-test #强制删除，运行中也能删
+      docker container prune #删除所有停止的容器
+      docker ps #查看所有容器
+      docker exec -it ubuntu-test /bin/bash #进入容器并运行其终端
+
+      docker export ubuntu-test > ubuntu.tar #导出本地的容器，创建镜像文件
+      cat ./ubuntu.tar | docker import - test/ubuntu:v1 #导入镜像
+      docker images #查看所有本地镜像
+      docker rmi test/ubuntu:v1 #删除本地镜像
+      docker run -itd --name ubuntu-test test/ubuntu:v1 /bin/bash #由镜像创建容器
+      docker commit -m="has update" -a="Author Jack" e218edb10161 test/ubuntu:v2
+          #由容器创建镜像副本
+
+      docker login #登录docker hub
+      docker logout #退出docker hub
+      docker search training #从docker hub上搜索相关镜像
+      docker pull training/webapp #从docker hub上载入镜像
+      docker run -d -P training/webapp python app.py #创建容器并运行web应用
+      docker run -d -p 127.0.0.1:5001:5000 training/webapp python app.py #可以设置端口
+      docker tag ubuntu:18.04 Ysong0603/ubuntu:18.04 #由一个镜像创建另一个镜像(有不同的标签)
+      docker push Ysong0603/ubuntu:18.04 #将镜像提交到docker hub上
+    \end{codeblock}
+
+      使用Dockerfile可以将环境打包成镜像
+      \begin{codeblock}[language=bash, caption={Dockerfile}]
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY . /app
+        RUN apt-get update && apt-get install -y python3
+        CMD ["python3", "/app/main.py"]
+      \end{codeblock}
+
+  \subsection{git}
+    git是一个版本控制工具，用于工作的管理。
+    \begin{codeblock}[language=bash, caption={git command}]
+      git init # 在本地创建一个git仓库
+      git clone https://github.com/username/repo.git & cd repo # 从github上clone已有项目
+
+      git checkout -b new-feature # 创建一个新的分支，并切换到该分支
+      git checkout new-feature # 切换到目标分支
+      git branch # 查看所有分支
+      git branch -r # 查看remote分支
+      git branch -d new-feature # 删除本地分支
+      git merge main # 将main分支合并到当前分支
+      git rebase main # 将当前分支变基到main分支
+
+      git add main.py # 将修改过的文件添加到暂存区
+      git add . # 添加所有修改过的文件
+      git status # 查看哪些文件在暂存区中
+      git diff # 查看工作区和暂存区的差异
+      git rm main.py # 从暂存区和工作区中删除文件
+      git rm --cached main.py #删除暂存区中的文件
+      git commit -m "Create main python file." # 提交更改并添加提交信息
+      git chechout . # 用暂存区的全部文件替换工作区的文件
+
+      git pull origin main # 拉取远程仓库中的最新更新，相当于fetch+merge
+      git push origin new-feature # 将本地的提交上传到仓库
+      git log --graph # 查看git仓库中的提交历史记录，也可选--oneline, --reverse
+      git log --author=Linus -n 5 # 查看Linus的最近5个提交
+      git blame main.py # 显示文件每一行代码的修改记录
+      git tag v1.0 # 为snapshot打上标签
     \end{codeblock}

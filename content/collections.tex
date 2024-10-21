@@ -218,7 +218,7 @@
         \item .n:小数位数
       \end{itemize}
 
-      \begin{table}[H]
+      \begin{table}[htb]
         \centering
         \caption{placeholder}
         \label{tab:placeholder}
@@ -250,7 +250,7 @@
         \item type:可选，指定类型
       \end{itemize}
 
-      \begin{table}[H]
+      \begin{table}[htb]
         \centering
         \caption{type options}
         \label{tab:type options}
@@ -280,7 +280,8 @@
         context='编号:{2}\t公司名称:{0}\t官网:http://www.{1}.com'.format(name, url, number)
 
         #下面假设有company变量，他有三个成员，分别是name、url和number
-        context='编号:{0.number}\t公司名称:{0.name}\t官网:http://www.{0.url}.com'.format(company)
+        context='编号:{0.number}\t公司名称:{0.name}\t官网:http://www.{0.url}.com'.format(
+            company)
       
         company = {'name': 'baidu', 'number': 7, 'url': 'baidu'}
         context = '编号:{number}\t公司名称:{name}\t官网:http://www.{url}.com'.format(**company)
@@ -356,7 +357,8 @@
           'id': student1.id})
       #从表中读取数据，*表示提取全部
       c.execute("SELECT * FROM students WHERE last_name='Elisabeth'")
-      c.execute("SELECT * FROM students WHERE last_name=?", ('Elisabeth',)) #1个元素也要加`,'
+      c.execute("SELECT * FROM students WHERE last_name=?", ('Elisabeth',)) 
+          #1个元素也要加`,'
       c.execute("SELECT * FROM students WHERE last_name=:last", {'last': 'Elisabeth'}) 
       get_data = c.fetchone() #从select得到的内容中读取1行
       get_data = c.fetchmany(5) #从select得到的内容中读取5行，返回一个列表

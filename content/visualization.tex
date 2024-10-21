@@ -1,4 +1,4 @@
-\section{visualization}
+\section{Visualization}
 
   \subsection{matplotlib}
     \subsubsection{画布预处理}
@@ -239,7 +239,7 @@
         from matplotlib import dates as mpl_dates
 
         #获取时间
-        dates = pd.Series([datetime(2024, 6, 30), datetime(2024, 7, 5), datetime(2024, 7, 11)])
+        dates = pd.Series([datetime(2024, 6, 30), datetime(2024, 7, 5)])
         dates = pd.Series(["2024-6-30", "2024-7-5", "2024-7-11"])
         dates = pd.to_datetime(dates).sort_values() #注意需要排序
         y = [4, 6, 7]
@@ -310,11 +310,51 @@
       """
 
       # 生成词云对象
-      wordcloud = wc.WordCloud(width=800, height=400, background_color='white').generate(text_data)
+      wordcloud = wc.WordCloud(width=800, 
+          height=400, 
+          background_color='white'
+          ).generate(text_data)
 
       # 显示词云图
       plt.figure(figsize=(10, 5))
       plt.imshow(wordcloud, interpolation='bilinear')
       plt.axis('off')
       plt.show()
+    \end{codeblock}
+
+  \subsection{tensorboard}
+    tensorboard可以用于实时监控运行中的数据，有很好的gui界面。
+    \begin{codeblock}[language=python, caption=tensorboard]
+      import torch.utils.tensorboard
+
+      writer = torch.utils.tensorboard.Summary(log_dir='./logs') # 创建日志文件目录
+      writer.add_scalar(tag="Plot1", scalar_value=y, global_step=x) # 创建(或选定)图像并加入数据点
+
+      writer.close() # 关闭日志文件
+    \end{codeblock}
+
+  \subsection{wandb}
+    wandb功能与tensorboard功能大致相同，并且提供了在线管理项目日志的功能。
+    \begin{codeblock}[language={bash}, caption={wandb login}]
+      pip install wandb
+      wandb login # 点击链接进入网站登录
+    \end{codeblock}
+
+    \begin{codeblock}[language=python, caption={wandb}]
+      import wandb
+      import os
+
+      wandb.init(project="MyProject") # 初始化项目日志
+      wandb.environ['WANDB_MODE'] = 'offline' # (可选)，离线运行
+
+      wandb.config = { # 记录运行的超参数
+        "lr": args.lr,
+        "epochs": args.epochs
+      }
+      wandb.config.update()
+
+      wandb.log({'epoch': x, 'loss': y}) # 在日志中加入数据
+
+      wandb.save("mymodel.h5") # 保存日志，默认在./wandb中
+      wandb.finish()
     \end{codeblock}

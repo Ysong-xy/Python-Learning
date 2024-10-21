@@ -1,6 +1,6 @@
-\section{Basic grammar}
+\section{Basic Grammar}
 
-  \subsection{type}
+  \subsection{variable}
     \begin{codeblock}[language=python, caption={variable type}]
       >>> str = "python"
       >>> dir(str) #获取相关用法
@@ -8,19 +8,23 @@
       >>> help(str) #获取guide
       >>> id(str) #获取内存地址
       >>> isinstance(str, string) #若str为string类型，则返回True，否则返回False
+      >>> hasattr(str, "__len__") #查询str是否有\_\_len\_\_函数
+      >>> getattr(str, "__len__")() #通过字符串调用方法
     \end{codeblock}
 
     \begin{codeblock}[language=python, caption={basic functions}]
-      print('Hello World!')
-      print('Hello', 'World!', sep=', ', end='') #各字符串间用`, '分隔，结尾没有换行符
-      print(round(3.75, 1)) #四舍五入保留一位小数
+      print('Hello', 'World!', sep=', ', end='') # 各字符串间用`, '分隔，结尾没有换行符
+      print(abs(round(3.75, 1))) # 四舍五入保留一位小数，并取绝对值
       float_number = 3.3; int_number = int(float_number)
+      int x = int(input("Please input an integer: ")) #输入
     \end{codeblock}
 
-  \subsection{operator precedence}
-      \begin{table}[H]
+  \subsection{operator}
+    \autoref{tab: operator priority}给出了Python运算符的优先级，注意不是所有运算符的组合都是已定义的。
+      \begin{table}[htb]
         \centering
         \caption{Python 运算符优先级表}
+        \label{tab: operator priority}
         \begin{tabular}{cc}
           \toprule[1.5pt]
           \textbf{优先级} & \textbf{运算符} \\ 
@@ -349,7 +353,8 @@
         def prefix_decorator(prefix):
           def decorator_function(original_function):
               def wrapper_function():
-                  print(prefix, 'wrapper executed before {}'.format(original_function.__name__))
+                  print(prefix, 
+                      'wrapper executed before {}'.format(original_function.__name__))
                   return original_function()
               return wrapper_function
           return decorator_function
@@ -397,6 +402,8 @@
   \subsection{input and output}
     \subsubsection{打开关闭文件}
       \begin{codeblock}[language=python, caption={open and close files}]
+        import io #在python2中，需要使用io.open()
+
         file = open(<filename>[,mode]) #打开文件
         print(file.name); print(file.mode) #输出文件名和打开方式
         file.close() #关闭文件
@@ -404,9 +411,11 @@
 
         #用with语句打开文件可以确保文件被正确关闭，且可以避免文件打开错误引起的异常
         with open(<filename>[,mode]) as file:
+        #在python2中建议使用io.open，python3中建议使用内置的open 
+        with io.open('examples.txt', mode='r', encoding='utf-8')
       \end{codeblock}
 
-      \begin{table}[H]
+      \begin{table}[htb]
         \centering
         \caption{Methods of Opening a File}
         \label{tab:Methods of Opening a File}
@@ -523,7 +532,8 @@
         import json
 
         data = json.loads(json_string) #将json文件的数据类型转换为python中的数据类型
-        new_json_string = json.dumps(data, indent=2, sort_key=true) #将python语句转换称json语句
+        new_json_string = json.dumps(data, indent=2, sort_key=true) 
+            #将python语句转换称json语句
 
         with open('test.json') as f:
             data = json.load(f) #读取json文件的内容
@@ -544,7 +554,8 @@
         with zipfile.ZipFile('files.zip', 'w') as my_zip: #使用file manager
             my_zip.write('test.txt')
             my_zip.write('thumbnail.png')
-        with zipfile.ZipFile('files.zip', 'w', compression=zipfile.ZIP_DEFLATED) as my_zip: #压缩文件
+        with zipfile.ZipFile('files.zip', 'w', compression=zipfile.ZIP_DEFLATED) as my_zip: 
+            #压缩文件
 
         with zipfile.ZipFile('files.zip', 'r') as my_zip: #压缩文件
             print(my_zip.namelist()) #获取zip file中的文件表

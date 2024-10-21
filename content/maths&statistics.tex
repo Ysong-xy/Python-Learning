@@ -112,7 +112,8 @@
         d_parser = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %I-%p')
         data = pd.read_csv('data.csv', parse_date=['Date'], date_parser=d_parser) 
             #将Date列转为datetime
-        data = pd.read_json('data.json', orient='records', lines=True) #读取列表形式的json文件
+        data = pd.read_json('data.json', orient='records', lines=True) 
+            #读取列表形式的json文件
 
         data.to_csv('data.csv', columns=['A','B'], index=False) #不写入行索引
         data.to_csv('data.tsv', sep='\t') #写入tsv文件
@@ -156,7 +157,8 @@
         #updata column
         data_frame.columns = ['Column_'+i for i in data_frame.columns]
         data_frame.columns = df.columns.str.replace(' ', '_') #将column中的空格替换为下划线
-        data_frame.rename(columns={'a': 'Column_a', 'b': 'Column_b'}, inplace=True) #替换columns名
+        data_frame.rename(columns={'a': 'Column_a', 'b': 'Column_b'}, inplace=True) 
+            #替换columns名
 
         #update values
         data_frame.loc['A':'B', 'a'] = [10, 11] #更新若干单元格
@@ -170,7 +172,7 @@
         df_total = data_frame.concat([df1, df2], axis='index') #合并两个DataFrame
 
         #drop values
-        data_frame.drop(index=['A', 'B'], inplace=True) #按index删除，inplace表示直接替换原数据
+        data_frame.drop(index=['A', 'B'], inplace=True) #按index删除，inplace表示替换原数据
         data_frame.drop(columns=['a', 'b'], inplace=True) #按column删除
       \end{codeblock}
 
@@ -186,7 +188,7 @@
             #替换Series的内容，未匹配的会保持原来的值
 
         #处理空缺值
-        null_num = data_frame.isnull().sum() #统计空缺值数量，isnull在空缺值返回True，否则返回False
+        null_num = data_frame.isnull().sum() #统计空缺值数量，在空缺值返回True，否则返回False
         not_null_num = data_frame.nornull().sum() #统计非空缺值数量
         data_frame.dropna(axis='index', inplace=True) #删除包含空缺值的整行数据
         data_frame.dropna(axis='index', how='all') #删除整行都空缺的数据
@@ -212,7 +214,7 @@
         #常用的统计函数
         data_frame.sort_index(inplace=True) #按index排序，NaN会被当成最大值
         data_frame.sort_values(by='a', ascending=False, inplace=True) #排序，ascending为升序
-        data_frame.sort_values(by=['a', 'b'], ascending=[True, False]) #第一标准相同排第二标准，以此类推
+        data_frame.sort_values(by=['a', 'b'], ascending=[True, False]) #第一标准相同排第二标准
         #以下函数在运行时会忽略NaN
         data_frame.nlargest(5, 'a') #取`a'最大的五行
         data_frame.nlargest(5, columns=['a', 'b']) #取最大五项，第一标准为`a'，第二标准为`b'
@@ -230,9 +232,12 @@
         #分组
         country_grp = df.groupby(['Country'])
         print(country_grp.get_group('United States')) #查找一个group，返回一个DataFrame
-        country_grp['SocialMedia'].value_counts().head() #统计每一个group的SocialMedia，返回Series
-        country_grp['Salary'].agg(['median', 'mean']) #返回DataFrame，\texttt{columns=['median', 'mean']}
-        country_grp['Language'].apply(lambda x: x.str.contains('French').sum())#将函数作用于每个group
+        country_grp['SocialMedia'].value_counts().head() 
+            #统计每一个group的SocialMedia，返回Series
+        country_grp['Salary'].agg(['median', 'mean']) 
+            #返回DataFrame，\texttt{columns=['median', 'mean']}
+        country_grp['Language'].apply(lambda x: x.str.contains('French').sum())
+            #将函数作用于每个group
       \end{codeblock}
 
     \subsubsection{处理datetime}
