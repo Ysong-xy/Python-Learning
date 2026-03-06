@@ -1,12 +1,12 @@
 % 基本设置和字体设置
 \usepackage[english]{babel} %.设置文档语言为英语
-\usepackage{fontspec}
-\usepackage[UTF8, punct=kaiming, heading,linespread=1.2]{ctex}           %.使用中文环境
+\usepackage{fontspec}       %.特殊字体设置
+\usepackage{ctex}           %.使用中文环境
 
 % 页面样式设置
-\usepackage{fancyhdr}        % 页眉和页脚设置
-\usepackage{titlesec}        % 标题页设置
-\usepackage{geometry}        % 页面布局控制
+\usepackage{fancyhdr}        %. 页眉和页脚设置
+\usepackage{titlesec}        %. 标题页设置
+\usepackage{geometry}        %. 页面布局控制
 
 % 表格相关宏包
 \usepackage{booktabs}        %.优雅的表格横线
@@ -32,10 +32,10 @@
 \usepackage{siunitx}         %.科学计数法和单位
 
 % 引用和参考文献
-\usepackage[hidelinks]{hyperref} % 超链接，隐藏颜色边框
 \usepackage{csquotes}           % 语言相关引号样式处理，建议与babel搭配
-\usepackage[backend=biber, style=authoryear]{biblatex}
-\addbibresource{ref.bib}
+\usepackage[hidelinks]{hyperref} % 超链接，隐藏颜色边框
+%? \usepackage[backend=biber, style=numeric]{biblatex}
+%? \addbibresource{ref.bib}
 \graphicspath{{./figure/}}
 
 \geometry{
@@ -111,6 +111,3 @@
 \renewcommand{\thefigure}{\arabic{figure}}
 \counterwithin{table}{section}
 \counterwithin{figure}{section}
-%. 更改表格名称为Table,图片更名为Figure
-\renewcommand{\tablename}{Table}
-\renewcommand{\figurename}{Figure}

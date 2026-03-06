@@ -23,6 +23,7 @@
         x = x.reshape(3, 4); x = x.reshape(3, 2, -1) #改变矩阵的形状，行优先
         A = A.contiguous() #将矩阵拷贝成内存中连续存储的形式(用于转置/截取等操作后)
         A = A.view(3, 4) #与reshape效果相同，但是要求内存连续(contiguous())
+        x = x.squeeze() #删除长度为0的维度，有参数dim
         x = x.unsqueeze(0) #在第0维插入一个新的维度
         x = x.permute((1, 0)) #将坐标轴顺序调换为(1, 0)
         A = torch.cat(x, y, dim=0) #将两个列数相同的张量纵向拼接

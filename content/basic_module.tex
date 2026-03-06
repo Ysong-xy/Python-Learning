@@ -232,12 +232,12 @@
     \begin{codeblock}[language=python, caption={argparse}]
       import argparse
 
-      parser = argparse.ArgumentParser(description="一个简单的计算程序“)
+      parser = argparse.ArgumentParser(description="一个简单的计算程序")
       
-      parser.add_argument("num1", type=float, help="第一个数字”) #添加参数(必选)
-      parser.add_argument("num2", type=float, help="第二个数字”) #添加参数(有默认值)
+      parser.add_argument("num1", type=float, help="第一个数字") #添加参数(必选)
+      parser.add_argument("num2", type=float, help="第二个数字") #添加参数(有默认值)
       parser.add_argument("-o", "--operation", choices=["add", "sub", "nul", "div"],
-          default="add", help="选择晕眩类型") #添加可选参数,需要有默认值
+          default="add", help="选择运算类型") #添加可选参数,需要有默认值
 
       args = parser.parse_args() #解析命令行参数
 

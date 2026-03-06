@@ -485,7 +485,7 @@
             finally:
                 f.close() #yield之后的语句将在退出with语块时执行
 
-        with open_file('test.txt', 'w):
+        with open_file('test.txt', 'w'):
             f.write('Hello, world!')
 
         import os

@@ -85,12 +85,14 @@
           soup = BeautifulSoup(html_file, 'lxml') #用lxml解析器解析html文件
 
       source = requests.get('http://bilibili.com').text
-      soup = BeautifulSoup(source, 'lxml') #从网页上获取文件
+      soup = BeautifulSoup(source, 'lxml', from_encoding='utf-8') #从网页上获取文件
 
       print(soup.prettify()) #转换成易读的html文件
       match = soup.title.text #得到文件中的某个部分
       match_div = soup.find('div', class_='footer') #查找文件中第一个对应的内容
       match_all = soup.find_all('div') #查找文件中所有对应的内容，返回一个列表
+      match_re = soup.find_all('a', href=re.compile(r'http://.*')) #正则表达式查找
+      match_cls = soup.find_all('div', class_='footer') #查找文件中所有对应的内容，返回一个列表
     \end{codeblock}
 
   \subsection{Flask}

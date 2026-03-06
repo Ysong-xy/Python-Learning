@@ -34,17 +34,34 @@
         a = np.logspace(0.9.10) #生成10的0-9次幂
         a = np.eye(3) #生成三维单位阵
         a = np.diag([1,2,3,4,5]) #生成对角阵
-        a = np.random.rand(2,3) #生成2*3随机矩阵,0-1均匀分布
-        a = np.random.randn(2, 3)
-        a = np.random.random((2,3)) #生成2*3随机矩阵，用元组表示大小
-        a = np.random.randint(low,high,size=(2,3)) #生成2*3随机整数矩阵
+      \end{codeblock}
+
+    \subsubsection{随机数生成}
+      \begin{codeblock}[language=python, caption={ramdom sample}]
+        samples = np.random.rand(2, 3) #生成2*3随机矩阵,0-1均匀分布
+        samples = np.random.randn(2, 3) #生成2*3标准正态分布矩阵
+        samples = np.random.random((2, 3)) #生成2*3随机矩阵，用元组表示大小
+        samples = np.random.randint(low, high, size=(2,3)) #生成2*3随机整数矩阵
+        samples = np.random.normal(loc=0.0, scale=1.0, size=1000) #生成正态分布样本
+        samples = np.random.uniform(low=0.0, high=10.0, size=1000) #生成均匀分布样本
+        samples = np.random.exponential(scale=1.0, size=1000) #生成指数分布样本
+        samples = np.random.poisson(lam=5, size=1000) #生成Poisson分布样本
+        samples = np.random.binomial(n=10, p=0.5, size=1000) #生成二项分布样本
+        samples = np.random.chisquare(df=2, size=1000) #生成$\chi^2$分布的样本
+        samples = np.random.beta(a=2.0, b=5.0, size=1000) #生成$\beta$分布的样本
       \end{codeblock}
 
     \subsubsection{特殊函数}  
       \begin{codeblock}[language=python, caption={Advanced operations in numpy}]
-        X,Y=np.meshgrid(x,y) #将x,y扩展为一个矩阵
         x,y=np.outer(x,y) #得到矩阵$x^{t}y$
-        x=np.append(x1,x2) #拼接array
+
+        X,Y=np.meshgrid(x,y) #将x,y扩展为一个矩阵
+        x=np.append(x1,x2) #拼接array，相当于concatenate，axis=0，但只能有两个元素
+        x=np.concatenate((x1,x2),axis=0) #拼接array
+        x=np.stack((x1,x2),axis=0) #堆叠array
+        x=np.hstack((x1,x2)) #水平拼接array，相当于concatenate，axis=1
+        x=np.vstack((x1,x2)) #竖直拼接array，相当于concatenate，axis=0
+
         a=X[1] #取出矩阵的一行
         a=X[:,1] #取出矩阵的一列
         X[:,0]=a #更改矩阵的一列
@@ -170,6 +187,7 @@
         df_total = data_frame._append(df, ignore_index=True) #合并两个DataFrame
         df_total = data_frame.concat([df1, df2], axis='columns') #合并两个DataFrame
         df_total = data_frame.concat([df1, df2], axis='index') #合并两个DataFrame
+        df['b'].shift(1) #b列的所有数据向后移一位(第一位为NAN)
 
         #drop values
         data_frame.drop(index=['A', 'B'], inplace=True) #按index删除，inplace表示替换原数据
@@ -229,6 +247,11 @@
         std = data_frame.std() #样本标准差
         print(data_frame.describe()) #给出数据的所有常见统计参数
 
+        #数据平滑处理
+        data = pd.Series([...])
+        smoothed_data = data.rolling(window=3, center=True).mean() #滑动窗口取平均，边缘会被丢弃
+        smoothed_data = data.ewm(span=3, adjust=False).mean() #指数移动平均 
+
         #分组
         country_grp = df.groupby(['Country'])
         print(country_grp.get_group('United States')) #查找一个group，返回一个DataFrame
@@ -258,3 +281,44 @@
             #重采样时，对不同column执行不同的操作
       \end{codeblock}
 
+  \subsection{scipy \& sympy}
+    scipy module可以用来处理拟合，最优化等问题。sympy module提供了相关的变量表达式功能。
+
+    \subsubsection{sympy基本操作}
+      \begin{codeblock}[language=python, caption={basic function in sympy}]
+        import sympy as sp
+
+        t_sym = sp.symbols('t'); x_sym = sp.symbols('x') #定义符号变量
+        x_expr = sp.sin(t_sym) #定义符号表达式
+        x_diff = sp.diff(x_expr, t_sym) #求导数的符号表达式
+        x_integral = sp.integrate(x_expr, t_sym) #求积分的符号表达式
+        x_defint = sp.integrate(x_expr, (t_sym, 0, sp.pi)) #求定积分
+
+        ode = sp.Eq(x_sym(t_sym).diff(t_sym), t ** 2) #定义微分方程
+        solution = sp.dsolve(ode, x_sym(t_sym)) #求解微分方程，得到符号表达式
+        solution = sp.dsolve(ode, x_sym(t_sym), ics={x(0): 1}) #代入初始条件
+      \end{codeblock}
+
+    \subsubsection{线性拟合}
+      \begin{codeblock}[language=python, caption={linregress}]
+        from scipy import stats
+
+        #线性拟合函数
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+      \end{codeblock}
+
+    \subsubsection{任意函数拟合}
+      \begin{codeblock}[language=python, caption={function fitting}]
+        import sympy as sp 
+        from scipy.optimize import curve_fit
+
+        #定义拟合的目标函数
+        def target_function(t, param0, param1, param2, param3):
+          return (param0 * np.exp(param1 * t + param2) + param3)
+
+        params, _ = curve_fit(target_function, t_data, x_data, maxfev=10000)
+          #对数据点进行拟合，最大迭代次数为10000
+        t_sym = sp.symbols('t') #定义变量
+        x_expr = (param[0] * sp.exp(param[1] * t + param[2]) + param[3])
+        x_func = sp.lambdify(t_sym, x_expr, "numpy") #将字符表达式转换成lambda表达式
+      \end{codeblock}

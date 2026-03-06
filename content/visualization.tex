@@ -47,6 +47,12 @@
                                 "color":"#FFFFFF"}
         ) #显示注释点
         plt.text(7,12,text) #显示无箭头注释
+        params=[
+          ["Slope", "1.21"],
+          ["Intercept", "0.032"]
+        ]
+        plt.table(cellText=params, colLabels=["Parameter", "Value"], bbox=[0.6, 0.4, 0.35, 0.4])
+          #添加表格，bbox的参数为[x0, y0, width, height]
 
         plt.savefig('plot.png') #保存图片
         plt.show() #显示图片，注意没有这句不会显示
@@ -331,6 +337,11 @@
       writer.add_scalar(tag="Plot1", scalar_value=y, global_step=x) # 创建(或选定)图像并加入数据点
 
       writer.close() # 关闭日志文件
+    \end{codeblock}
+
+    可以在终端中查看tensorboard的运行情况：
+    \begin{codeblock}[language={bash}, caption={tensorboard}]
+      tensorboard --logdir=logs --port=6006
     \end{codeblock}
 
   \subsection{wandb}
